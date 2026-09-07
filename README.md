@@ -122,7 +122,7 @@ For rapid grading, review, and demonstration, the system includes pre-seeded acc
 | **Faculty Coordinator** | `coordinator@campus.edu` | `Coord@123` | Department event creation, live check-in desk, attendee rosters, attendance reports |
 | **Enrolled Student** | `student@campus.edu` | `Student@123` | Browse catalog, multi-ticket checkout, simulated payment, printable QR passes, booking cancellation |
 
-*(Note: The login page includes a fast 1-click demo role selector button).*
+*(See [CREDENTIALS.md](CREDENTIALS.md) for complete account credentials and permissions).*
 
 ---
 
@@ -160,7 +160,7 @@ If you want to run or demonstrate the project **immediately without setting up a
   - `confirmation.html`: Instant booking confirmation with voucher download links.
   - `ticket-view.html`: Digital printable ticket passes with QR codes.
   - `verify-ticket.html`: Interactive gate entrance ticket scanner and validator.
-  - `login.html` & `register.html`: 1-click role switcher (Admin, Coordinator, Student).
+  - `login.html` & `register.html`: Clean authentication and role access.
   - `student-dashboard.html`: Student pass viewer & cancellation portal.
   - `coordinator-dashboard.html`: Faculty coordinator event management & live check-in list.
   - `admin-dashboard.html`: Enterprise analytics with responsive HTML5 Canvas charts.
