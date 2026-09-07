@@ -24,17 +24,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     require_csrf_token();
 
     try {
-        $logs[] = "Connecting to MySQL server at " . DB_HOST . ":" . DB_PORT . "...";
-        $serverPdo = Database::getServerConnection();
-        if (!$serverPdo) {
-            throw new Exception("Unable to connect to MySQL server. Please ensure MySQL is running in XAMPP. (Error: " . Database::getLastError() . ")");
-        }
-        $logs[] = "Connected to MySQL server successfully.";
+        $logs[] = "Connecting to database target " . DB_HOST . ":" . DB_PORT . "...";
+        $activePdo = null;
 
-        $logs[] = "Creating database `" . DB_NAME . "` if not exists...";
-        $serverPdo->exec("CREATE DATABASE IF NOT EXISTS `" . DB_NAME . "` CHARACTER SET " . DB_CHARSET . " COLLATE " . DB_CHARSET . "_unicode_ci;");
-        $serverPdo->exec("USE `" . DB_NAME . "`;");
-        $logs[] = "Database `" . DB_NAME . "` is active.";
+        // Try server connection first (for local XAMPP auto-create DB)
+        $serverPdo = Database::getServerConnection();
+        if ($serverPdo) {
+            try {
+                $serverPdo->exec("CREATE DATABASE IF NOT EXISTS `" . DB_NAME . "` CHARACTER SET " . DB_CHARSET . " COLLATE " . DB_CHARSET . "_unicode_ci;");
+                $serverPdo->exec("USE `" . DB_NAME . "`;");
+                $activePdo = $serverPdo;
+                $logs[] = "Database `" . DB_NAME . "` ensured and active.";
+            } catch (Exception $dbEx) {
+                $logs[] = "Server connection mode bypassed: " . $dbEx->getMessage();
+            }
+        }
+
+        // If not connected yet, try direct database connection (for cloud MySQL providers)
+        if (!$activePdo) {
+            $activePdo = Database::getConnection();
+        }
+
+        if (!$activePdo) {
+            throw new Exception("Unable to connect to MySQL database. (Error: " . (Database::getLastError() ?? 'Check your DB credentials') . ")");
+        }
+        $logs[] = "Connected to database `" . DB_NAME . "` successfully.";
 
         $logs[] = "Executing database schema (tables, foreign keys, indexes)...";
         $schemaFile = APP_ROOT . '/database/schema.sql';
@@ -42,8 +56,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             throw new Exception("schema.sql file not found.");
         }
         $schemaSql = file_get_contents($schemaFile);
-        $serverPdo->exec($schemaSql);
-        $logs[] = "All 10 relational tables created successfully.";
+        $activePdo->exec($schemaSql);
+        $logs[] = "All relational tables created successfully.";
 
         $logs[] = "Importing seed records (Categories, Events, Coordinators, Students)...";
         $seedFile = APP_ROOT . '/database/seed.sql';
@@ -51,20 +65,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             throw new Exception("seed.sql file not found.");
         }
         $seedSql = file_get_contents($seedFile);
-        $serverPdo->exec($seedSql);
+        $activePdo->exec($seedSql);
 
         // Update with freshly hashed passwords using native Argon2id / Bcrypt
         $adminHash = hash_password('Admin@123');
         $coordHash = hash_password('Coord@123');
         $stuHash = hash_password('Student@123');
 
-        $updateStmt = $serverPdo->prepare("UPDATE users SET password_hash = ? WHERE email = 'admin@campus.edu'");
+        $updateStmt = $activePdo->prepare("UPDATE users SET password_hash = ? WHERE email = 'admin@campus.edu'");
         $updateStmt->execute([$adminHash]);
 
-        $updateCoord = $serverPdo->prepare("UPDATE users SET password_hash = ? WHERE role = 'coordinator'");
+        $updateCoord = $activePdo->prepare("UPDATE users SET password_hash = ? WHERE role = 'coordinator'");
         $updateCoord->execute([$coordHash]);
 
-        $updateStu = $serverPdo->prepare("UPDATE users SET password_hash = ? WHERE role = 'student'");
+        $updateStu = $activePdo->prepare("UPDATE users SET password_hash = ? WHERE role = 'student'");
         $updateStu->execute([$stuHash]);
 
         $logs[] = "Initial demo accounts and password credentials configured.";
