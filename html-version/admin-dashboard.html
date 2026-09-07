@@ -71,11 +71,16 @@
             background: #ffffff;
             border-radius: 12px;
             width: 100%;
-            max-width: 600px;
+            max-width: 620px;
             max-height: 90vh;
             overflow-y: auto;
             box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3);
             border: 1px solid #e2e8f0;
+            animation: modalSlide 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes modalSlide {
+            from { opacity: 0; transform: scale(0.96) translateY(8px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
         }
         .badge-suspended {
             background: #fee2e2;
@@ -107,6 +112,25 @@
             color: var(--primary);
             background: #eff6ff;
             transform: translateY(-1px);
+        }
+        .table-filter-bar {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .table-filter-inputs {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            flex-wrap: wrap;
         }
     </style>
 </head>
@@ -145,22 +169,25 @@
             </div>
         </div>
         <nav class="sidebar-nav">
-            <div class="nav-section-label">Main Navigation</div>
+            <div class="nav-section-label">Management Views</div>
             <ul class="sidebar-menu">
-                <li><a href="javascript:void(0)" onclick="switchTab('overview')" id="sbTabOverview" class="sidebar-link active"><span class="sb-text">📊 Dashboard Overview</span></a></li>
+                <li><a href="javascript:void(0)" onclick="switchTab('overview')" id="sbTabOverview" class="sidebar-link active"><span class="sb-text">📊 Overview & Analytics</span></a></li>
                 <li><a href="javascript:void(0)" onclick="switchTab('events')" id="sbTabEvents" class="sidebar-link"><span class="sb-text">🗓️ Manage Events</span></a></li>
-                <li><a href="javascript:void(0)" onclick="switchTab('coordinators')" id="sbTabCoords" class="sidebar-link"><span class="sb-text">👥 Coordinator Access</span></a></li>
+                <li><a href="javascript:void(0)" onclick="switchTab('coordinators')" id="sbTabCoords" class="sidebar-link"><span class="sb-text">👥 Faculty Coordinators</span></a></li>
+                <li><a href="javascript:void(0)" onclick="switchTab('categories')" id="sbTabCategories" class="sidebar-link"><span class="sb-text">📁 Academic Categories</span></a></li>
                 <li><a href="javascript:void(0)" onclick="switchTab('students')" id="sbTabStudents" class="sidebar-link"><span class="sb-text">🎓 Students Registry</span></a></li>
                 <li><a href="javascript:void(0)" onclick="switchTab('bookings')" id="sbTabBookings" class="sidebar-link"><span class="sb-text">💳 Bookings & Payments</span></a></li>
             </ul>
             <div class="nav-section-label" style="margin-top:16px;">Quick Actions</div>
             <ul class="sidebar-menu">
                 <li><a href="javascript:void(0)" onclick="openCreateEventModal()" class="sidebar-link" style="color:var(--primary); font-weight:700;"><span class="sb-text">+ Create New Event</span></a></li>
+                <li><a href="javascript:void(0)" onclick="openAddCategoryModal()" class="sidebar-link"><span class="sb-text">+ Add Category</span></a></li>
                 <li><a href="verify-ticket.html" class="sidebar-link"><span class="sb-text">📲 Gate Pass Scanner</span></a></li>
                 <li><a href="events.html" class="sidebar-link"><span class="sb-text">🔍 Public Catalog</span></a></li>
             </ul>
             <div class="nav-section-label" style="margin-top:16px;">Session</div>
             <ul class="sidebar-menu">
+                <li><a href="javascript:void(0)" onclick="MockDB.resetDatabase()" class="sidebar-link" style="color:#64748b;"><span class="sb-text">🔄 Reset Demo Data</span></a></li>
                 <li><a href="javascript:void(0)" onclick="MockDB.logout()" class="sidebar-link" style="color:#ef4444;"><span class="sb-text">🚪 Sign Out</span></a></li>
             </ul>
         </nav>
@@ -170,7 +197,7 @@
         <div class="dashboard-page-header">
             <div class="dashboard-header-title">
                 <h1>Platform Administration Dashboard</h1>
-                <p>Welcome, Dr. Arthur Pendelton. Manage events, assign faculty coordinators, and monitor registrations.</p>
+                <p>Welcome, Dr. Arthur Pendelton. Full live control to add, edit, toggle, and delete events, coordinators, and categories.</p>
             </div>
             <div class="dashboard-header-actions">
                 <button onclick="openCreateEventModal()" class="btn btn-primary" style="box-shadow:var(--shadow-sm); padding:10px 18px; font-weight:700;">
@@ -191,6 +218,9 @@
             <button class="admin-tab-btn" id="tabBtnCoordinators" onclick="switchTab('coordinators')">
                 👥 Faculty Coordinators (<span id="tabCountCoords">0</span>)
             </button>
+            <button class="admin-tab-btn" id="tabBtnCategories" onclick="switchTab('categories')">
+                📁 Categories (<span id="tabCountCategories">0</span>)
+            </button>
             <button class="admin-tab-btn" id="tabBtnStudents" onclick="switchTab('students')">
                 🎓 Students Registry (<span id="tabCountStudents">0</span>)
             </button>
@@ -205,17 +235,20 @@
             <!-- Quick Actions Ribbon -->
             <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:14px 18px; margin-bottom:24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
                 <div style="font-size:0.88rem; font-weight:700; color:#334155;">
-                    ⚡ Quick Admin Tools:
+                    ⚡ Fast Administration Actions:
                 </div>
                 <div style="display:flex; gap:10px; flex-wrap:wrap;">
                     <button onclick="openCreateEventModal()" class="quick-action-pill" style="background:#eff6ff; color:#1e40af; border-color:#bfdbfe;">
-                        ➕ Create New Event
+                        ➕ Create Event
                     </button>
                     <button onclick="openAddCoordModal()" class="quick-action-pill">
-                        👤 Grant Faculty Coordinator
+                        👤 Grant Coordinator
+                    </button>
+                    <button onclick="openAddCategoryModal()" class="quick-action-pill">
+                        📁 Add Category
                     </button>
                     <a href="verify-ticket.html" class="quick-action-pill">
-                        📲 Gate Entrance Scanner
+                        📲 Pass Scanner
                     </a>
                     <a href="events.html" target="_blank" class="quick-action-pill">
                         🌐 View Live Catalog
@@ -227,8 +260,8 @@
             <div class="metrics-grid">
                 <div class="metric-card">
                     <div class="metric-info">
-                        <span class="metric-label">Total Volume</span>
-                        <span class="metric-value num-tabular" id="metricTotalRev">$75.00</span>
+                        <span class="metric-label">Total Revenue</span>
+                        <span class="metric-value num-tabular" id="metricTotalRev">$0.00</span>
                         <span class="metric-sub">Settled pass transactions</span>
                     </div>
                     <div class="metric-icon-box metric-icon-green">
@@ -239,7 +272,7 @@
                 <div class="metric-card">
                     <div class="metric-info">
                         <span class="metric-label">Published Events</span>
-                        <span class="metric-value num-tabular" id="metricTotalEvents">5</span>
+                        <span class="metric-value num-tabular" id="metricTotalEvents">0</span>
                         <span class="metric-sub">Active symposiums</span>
                     </div>
                     <div class="metric-icon-box metric-icon-blue">
@@ -250,8 +283,8 @@
                 <div class="metric-card">
                     <div class="metric-info">
                         <span class="metric-label">Total Bookings</span>
-                        <span class="metric-value num-tabular" id="metricTotalBookings">2</span>
-                        <span class="metric-sub">Issued ticket orders</span>
+                        <span class="metric-value num-tabular" id="metricTotalBookings">0</span>
+                        <span class="metric-sub">Confirmed orders</span>
                     </div>
                     <div class="metric-icon-box metric-icon-purple">
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z"/></svg>
@@ -261,7 +294,7 @@
                 <div class="metric-card">
                     <div class="metric-info">
                         <span class="metric-label">Faculty Coordinators</span>
-                        <span class="metric-value num-tabular" id="metricTotalCoords">2</span>
+                        <span class="metric-value num-tabular" id="metricTotalCoords">0</span>
                         <span class="metric-sub">Assigned event chairs</span>
                     </div>
                     <div class="metric-icon-box metric-icon-amber">
@@ -274,7 +307,7 @@
             <div class="dashboard-grid-split">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Booking Velocity (Last 7 Days)</h3>
+                        <h3 class="card-title">Registration Activity</h3>
                     </div>
                     <div class="card-body">
                         <div class="chart-container">
@@ -313,10 +346,11 @@
                                     <th>Amount</th>
                                     <th>Status</th>
                                     <th>Booked Date</th>
+                                    <th style="text-align:right;">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="overviewBookingsTable">
-                                <!-- Populated -->
+                                <!-- Populated dynamically -->
                             </tbody>
                         </table>
                     </div>
@@ -326,16 +360,26 @@
 
         <!-- ==================== TAB 2: EVENTS MANAGEMENT ==================== -->
         <div class="tab-content-panel" id="panel-events">
-            <div class="card">
-                <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-                    <div>
-                        <h3 class="card-title" style="margin:0 0 4px 0;">All Campus Events Directory</h3>
-                        <p style="font-size:0.85rem; color:var(--text-muted); margin:0;">Create, edit, toggle status, and monitor seat capacities for all events.</p>
-                    </div>
-                    <button onclick="openCreateEventModal()" class="btn btn-primary btn-sm">
-                        + Create New Event
-                    </button>
+            <div class="table-filter-bar">
+                <div class="table-filter-inputs">
+                    <input type="text" id="eventSearchInput" class="form-control" placeholder="🔍 Search events by title or venue..." style="max-width:280px;" oninput="filterEventsTable()">
+                    <select id="eventCatFilter" class="form-select" style="max-width:200px;" onchange="filterEventsTable()">
+                        <option value="">All Categories</option>
+                        <!-- Populated -->
+                    </select>
+                    <select id="eventStatusFilter" class="form-select" style="max-width:160px;" onchange="filterEventsTable()">
+                        <option value="">All Statuses</option>
+                        <option value="open">Open</option>
+                        <option value="closed">Closed</option>
+                        <option value="full">Full</option>
+                    </select>
                 </div>
+                <button onclick="openCreateEventModal()" class="btn btn-primary btn-sm">
+                    + Create New Event
+                </button>
+            </div>
+
+            <div class="card">
                 <div class="card-body" style="padding:0;">
                     <div class="table-responsive">
                         <table class="table">
@@ -343,16 +387,16 @@
                                 <tr>
                                     <th>Event Details</th>
                                     <th>Coordinator</th>
-                                    <th>Date & Schedule</th>
+                                    <th>Date & Time</th>
                                     <th>Venue</th>
-                                    <th>Capacity Ratio</th>
-                                    <th>Price</th>
+                                    <th>Capacity Progress</th>
+                                    <th>Ticket Price</th>
                                     <th>Status</th>
-                                    <th style="text-align:right;">Actions</th>
+                                    <th style="text-align:right;">Live Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="eventsManagerTable">
-                                <!-- Populated -->
+                                <!-- Populated dynamically -->
                             </tbody>
                         </table>
                     </div>
@@ -362,18 +406,16 @@
 
         <!-- ==================== TAB 3: COORDINATORS ==================== -->
         <div class="tab-content-panel" id="panel-coordinators">
-            <div class="card">
-                <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-                    <div>
-                        <h3 class="card-title" style="margin:0 0 4px 0;">Faculty Coordinator Privilege & Access Control</h3>
-                        <p style="font-size:0.85rem; color:var(--text-muted); margin:0;">
-                            Only System Administrators can grant or revoke Faculty Coordinator credentials.
-                        </p>
-                    </div>
-                    <button onclick="openAddCoordModal()" class="btn btn-primary btn-sm">
-                        + Grant Access to Faculty
-                    </button>
+            <div class="table-filter-bar">
+                <div class="table-filter-inputs">
+                    <input type="text" id="coordSearchInput" class="form-control" placeholder="🔍 Search coordinators by name or email..." style="max-width:320px;" oninput="filterCoordinatorsTable()">
                 </div>
+                <button onclick="openAddCoordModal()" class="btn btn-primary btn-sm">
+                    + Grant Faculty Coordinator Access
+                </button>
+            </div>
+
+            <div class="card">
                 <div class="card-body" style="padding:0;">
                     <div class="table-responsive">
                         <table class="table">
@@ -381,14 +423,14 @@
                                 <tr>
                                     <th>Faculty Name</th>
                                     <th>Department & Title</th>
-                                    <th>Email</th>
+                                    <th>Institutional Email</th>
                                     <th>Assigned Events</th>
-                                    <th>Access Status</th>
-                                    <th style="text-align:right;">Admin Actions</th>
+                                    <th>Privilege Status</th>
+                                    <th style="text-align:right;">Live Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="coordinatorsTableBody">
-                                <!-- Populated -->
+                                <!-- Populated dynamically -->
                             </tbody>
                         </table>
                     </div>
@@ -396,12 +438,51 @@
             </div>
         </div>
 
-        <!-- ==================== TAB 4: STUDENTS REGISTRY ==================== -->
-        <div class="tab-content-panel" id="panel-students">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Enrolled Students Directory</h3>
+        <!-- ==================== TAB 4: CATEGORIES ==================== -->
+        <div class="tab-content-panel" id="panel-categories">
+            <div class="table-filter-bar">
+                <div style="font-weight:600; color:#334155;">
+                    Academic & Domain Classifications for Events
                 </div>
+                <button onclick="openAddCategoryModal()" class="btn btn-primary btn-sm">
+                    + Add New Category
+                </button>
+            </div>
+
+            <div class="card">
+                <div class="card-body" style="padding:0;">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Category Name</th>
+                                    <th>Slug</th>
+                                    <th>Description</th>
+                                    <th>Active Events</th>
+                                    <th style="text-align:right;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="categoriesTableBody">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 5: STUDENTS REGISTRY ==================== -->
+        <div class="tab-content-panel" id="panel-students">
+            <div class="table-filter-bar">
+                <div class="table-filter-inputs">
+                    <input type="text" id="studentSearchInput" class="form-control" placeholder="🔍 Search students by name, ID or email..." style="max-width:340px;" oninput="filterStudentsTable()">
+                </div>
+                <button onclick="openAddStudentModal()" class="btn btn-primary btn-sm">
+                    + Register New Student
+                </button>
+            </div>
+
+            <div class="card">
                 <div class="card-body" style="padding:0;">
                     <div class="table-responsive">
                         <table class="table">
@@ -411,13 +492,14 @@
                                     <th>Full Name</th>
                                     <th>Email</th>
                                     <th>Department</th>
-                                    <th>Year of Study</th>
+                                    <th>Year</th>
                                     <th>Total Bookings</th>
-                                    <th>Account Status</th>
+                                    <th>Status</th>
+                                    <th style="text-align:right;">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="studentsTableBody">
-                                <!-- Populated -->
+                                <!-- Populated dynamically -->
                             </tbody>
                         </table>
                     </div>
@@ -425,12 +507,18 @@
             </div>
         </div>
 
-        <!-- ==================== TAB 5: BOOKINGS AUDIT ==================== -->
+        <!-- ==================== TAB 6: BOOKINGS AUDIT ==================== -->
         <div class="tab-content-panel" id="panel-bookings">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Global Bookings & Revenue Ledger</h3>
+            <div class="table-filter-bar">
+                <div class="table-filter-inputs">
+                    <input type="text" id="bookingSearchInput" class="form-control" placeholder="🔍 Search bookings by reference or student..." style="max-width:340px;" oninput="filterBookingsTable()">
                 </div>
+                <div style="font-size:0.85rem; color:#64748b;">
+                    Total Settled: <strong id="bookingsLedgerTotal">$0.00</strong>
+                </div>
+            </div>
+
+            <div class="card">
                 <div class="card-body" style="padding:0;">
                     <div class="table-responsive">
                         <table class="table">
@@ -439,14 +527,15 @@
                                     <th>Booking Ref</th>
                                     <th>Student Name</th>
                                     <th>Event Title</th>
-                                    <th>Tickets</th>
+                                    <th>Passes</th>
                                     <th>Total Paid</th>
-                                    <th>Booking Status</th>
+                                    <th>Status</th>
                                     <th>Timestamp</th>
+                                    <th style="text-align:right;">Live Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="adminBookingsTable">
-                                <!-- Populated -->
+                                <!-- Populated dynamically -->
                             </tbody>
                         </table>
                     </div>
@@ -508,7 +597,7 @@
                     <input type="text" id="evVenue" class="form-control" placeholder="e.g. Innovation Hall C" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label form-label-required">Venue Full Address</label>
+                    <label class="form-label form-label-required">Venue Address</label>
                     <input type="text" id="evVenueAddress" class="form-control" placeholder="e.g. Technology Quad, North Campus" required>
                 </div>
             </div>
@@ -526,12 +615,12 @@
             </div>
 
             <div class="form-group">
-                <label class="form-label form-label-required">Short Summary (Teaser)</label>
+                <label class="form-label form-label-required">Short Summary</label>
                 <input type="text" id="evShortDesc" class="form-control" placeholder="e.g. Join researchers for demonstrations of autonomous robotics." required>
             </div>
 
             <div class="form-group">
-                <label class="form-label">Full Event Agenda & Description</label>
+                <label class="form-label">Full Agenda & Details</label>
                 <textarea id="evDescription" class="form-control" rows="3" placeholder="Keynote speaker details, competition tracks, and schedule..."></textarea>
             </div>
 
@@ -544,6 +633,99 @@
             <div style="display:flex; justify-content:flex-end; gap:10px; border-top:1px solid #e2e8f0; padding-top:16px;">
                 <button type="button" onclick="closeCreateEventModal()" class="btn btn-outline-secondary btn-sm">Cancel</button>
                 <button type="submit" class="btn btn-primary btn-sm" style="font-weight:700; padding:8px 20px;">Publish Event &rarr;</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ==================== MODAL: EDIT EVENT ==================== -->
+<div class="modal-backdrop" id="editEventModal">
+    <div class="modal-box">
+        <div style="padding:18px 24px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; background:#f8fafc;">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:1.2rem;">✏️</span>
+                <h3 style="font-size:1.15rem; font-weight:800; color:var(--text-primary); margin:0;">
+                    Edit Event Details
+                </h3>
+            </div>
+            <button onclick="closeEditEventModal()" style="border:none; background:none; font-size:1.4rem; cursor:pointer; color:#64748b;">&times;</button>
+        </div>
+        
+        <form id="editEventForm" style="padding:24px;">
+            <input type="hidden" id="editEvId">
+
+            <div class="form-group">
+                <label class="form-label form-label-required">Event Title</label>
+                <input type="text" id="editEvTitle" class="form-control" required>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label form-label-required">Academic Category</label>
+                    <select id="editEvCategory" class="form-select" required></select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label form-label-required">Faculty Coordinator</label>
+                    <select id="editEvCoordinator" class="form-select" required></select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label form-label-required">Event Date</label>
+                    <input type="date" id="editEvDate" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label form-label-required">Start Time</label>
+                    <input type="text" id="editEvStartTime" class="form-control" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label form-label-required">Venue / Hall</label>
+                    <input type="text" id="editEvVenue" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label form-label-required">Status</label>
+                    <select id="editEvStatus" class="form-select" required>
+                        <option value="open">Open (Accepting Bookings)</option>
+                        <option value="almost_full">Almost Full</option>
+                        <option value="closed">Closed</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label form-label-required">Ticket Price ($ USD)</label>
+                    <input type="number" id="editEvPrice" class="form-control" min="0" step="0.50" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label form-label-required">Max Capacity</label>
+                    <input type="number" id="editEvCapacity" class="form-control" min="1" max="5000" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label form-label-required">Short Summary</label>
+                <input type="text" id="editEvShortDesc" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Full Agenda & Details</label>
+                <textarea id="editEvDescription" class="form-control" rows="3"></textarea>
+            </div>
+
+            <div class="form-group" style="margin-bottom:20px;">
+                <label style="display:flex; align-items:center; gap:8px; font-weight:600; cursor:pointer;">
+                    <input type="checkbox" id="editEvFeatured"> Feature on Homepage Hero Carousel
+                </label>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:10px; border-top:1px solid #e2e8f0; padding-top:16px;">
+                <button type="button" onclick="closeEditEventModal()" class="btn btn-outline-secondary btn-sm">Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm" style="font-weight:700; padding:8px 20px;">Save Changes &rarr;</button>
             </div>
         </form>
     </div>
@@ -581,7 +763,76 @@
             </div>
             <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
                 <button type="button" onclick="closeAddCoordModal()" class="btn btn-outline-secondary btn-sm">Cancel</button>
-                <button type="submit" class="btn btn-primary btn-sm">Grant Coordinator Privileges</button>
+                <button type="submit" class="btn btn-primary btn-sm">Grant Privileges</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ==================== MODAL: ADD / EDIT CATEGORY ==================== -->
+<div class="modal-backdrop" id="categoryModal">
+    <div class="modal-box">
+        <div style="padding:18px 22px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; background:#f8fafc;">
+            <h3 style="font-size:1.1rem; font-weight:700; color:var(--text-primary); margin:0;" id="categoryModalTitle">
+                Add Academic Category
+            </h3>
+            <button onclick="closeCategoryModal()" style="border:none; background:none; font-size:1.4rem; cursor:pointer; color:#64748b;">&times;</button>
+        </div>
+        <form id="categoryForm" style="padding:22px;">
+            <input type="hidden" id="catId">
+            <div class="form-group">
+                <label class="form-label form-label-required">Category Name</label>
+                <input type="text" id="catName" class="form-control" placeholder="e.g. Biomedical & Life Sciences" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea id="catDesc" class="form-control" rows="2" placeholder="Brief summary of events in this domain..."></textarea>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+                <button type="button" onclick="closeCategoryModal()" class="btn btn-outline-secondary btn-sm">Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm" id="catSubmitBtn">Save Category</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ==================== MODAL: ADD STUDENT ==================== -->
+<div class="modal-backdrop" id="addStudentModal">
+    <div class="modal-box">
+        <div style="padding:18px 22px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; background:#f8fafc;">
+            <h3 style="font-size:1.1rem; font-weight:700; color:var(--text-primary); margin:0;">
+                Register Enrolled Student
+            </h3>
+            <button onclick="closeAddStudentModal()" style="border:none; background:none; font-size:1.4rem; cursor:pointer; color:#64748b;">&times;</button>
+        </div>
+        <form id="addStudentForm" style="padding:22px;">
+            <div class="form-group">
+                <label class="form-label form-label-required">Student Full Name</label>
+                <input type="text" id="stuName" class="form-control" placeholder="e.g. Maya Lin" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label form-label-required">Student Email</label>
+                <input type="email" id="stuEmail" class="form-control" placeholder="e.g. m.lin@campus.edu" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label form-label-required">Department</label>
+                    <input type="text" id="stuDept" class="form-control" placeholder="e.g. Mechanical Engineering" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label form-label-required">Year</label>
+                    <select id="stuYear" class="form-select" required>
+                        <option value="1st Year">1st Year</option>
+                        <option value="2nd Year">2nd Year</option>
+                        <option value="3rd Year">3rd Year</option>
+                        <option value="4th Year">4th Year</option>
+                        <option value="Graduate">Graduate</option>
+                    </select>
+                </div>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+                <button type="button" onclick="closeAddStudentModal()" class="btn btn-outline-secondary btn-sm">Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm">Add Student</button>
             </div>
         </form>
     </div>
@@ -589,7 +840,7 @@
 
 <script src="assets/js/mock-db.js"></script>
 <script>
-// 1. Strict RBAC enforcement
+// 1. Enforce RBAC security
 MockDB.requireRole(['admin']);
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -600,19 +851,16 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('adminUserName').textContent = currentUser.name;
     }
 
-    // Populate dropdowns in Create Event Modal
     populateEventModalDropdowns();
-
-    // Render all dashboard sections
     renderAll();
 
-    // Event Create Form submission
+    // Create Event Form Handler
     document.getElementById('createEventForm').addEventListener('submit', (e) => {
         e.preventDefault();
         const catSelect = document.getElementById('evCategory');
         const selectedCatName = catSelect.options[catSelect.selectedIndex].text;
         const coordSelect = document.getElementById('evCoordinator');
-        const selectedCoordName = coordSelect.options[coordSelect.selectedIndex].text;
+        const selectedCoordName = coordSelect.options[coordSelect.selectedIndex].text.split(' (')[0];
 
         const newEvData = {
             title: document.getElementById('evTitle').value.trim(),
@@ -633,17 +881,53 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const created = MockDB.createEvent(newEvData);
-            alert(`✅ Event successfully created and published!\n"${created.title}"`);
+            MockDB.toast(`Event "${created.title}" successfully created and published!`, 'success');
             closeCreateEventModal();
             document.getElementById('createEventForm').reset();
             renderAll();
-            switchTab('events'); // Auto jump to events tab
+            switchTab('events');
         } catch (err) {
-            alert('Error creating event: ' + err.message);
+            MockDB.toast(err.message, 'error');
         }
     });
 
-    // Coordinator Grant Form submission
+    // Edit Event Form Handler
+    document.getElementById('editEventForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const id = document.getElementById('editEvId').value;
+        const catSelect = document.getElementById('editEvCategory');
+        const selectedCatName = catSelect.options[catSelect.selectedIndex].text;
+        const coordSelect = document.getElementById('editEvCoordinator');
+        const selectedCoordName = coordSelect.options[coordSelect.selectedIndex].text.split(' (')[0];
+
+        const updatedData = {
+            title: document.getElementById('editEvTitle').value.trim(),
+            category_id: parseInt(catSelect.value, 10),
+            category_name: selectedCatName,
+            coordinator_name: selectedCoordName,
+            coordinator_email: coordSelect.value,
+            event_date: document.getElementById('editEvDate').value,
+            start_time: document.getElementById('editEvStartTime').value.trim(),
+            venue: document.getElementById('editEvVenue').value.trim(),
+            status: document.getElementById('editEvStatus').value,
+            ticket_price: parseFloat(document.getElementById('editEvPrice').value) || 0,
+            max_capacity: parseInt(document.getElementById('editEvCapacity').value, 10) || 100,
+            short_description: document.getElementById('editEvShortDesc').value.trim(),
+            description: document.getElementById('editEvDescription').value.trim(),
+            is_featured: document.getElementById('editEvFeatured').checked
+        };
+
+        try {
+            MockDB.updateEvent(id, updatedData);
+            MockDB.toast('Event updated successfully!', 'success');
+            closeEditEventModal();
+            renderAll();
+        } catch (err) {
+            MockDB.toast(err.message, 'error');
+        }
+    });
+
+    // Grant Coordinator Form Handler
     document.getElementById('grantCoordForm').addEventListener('submit', (e) => {
         e.preventDefault();
         const name = document.getElementById('coordName').value.trim();
@@ -654,20 +938,64 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             MockDB.createCoordinator({ name, email, department, designation, phone });
-            alert(`✅ Coordinator privileges granted to ${name} (${email})!`);
+            MockDB.toast(`Coordinator access granted to ${name}!`, 'success');
             closeAddCoordModal();
             document.getElementById('grantCoordForm').reset();
             populateEventModalDropdowns();
             renderAll();
             switchTab('coordinators');
         } catch (err) {
-            alert('Error: ' + err.message);
+            MockDB.toast(err.message, 'error');
+        }
+    });
+
+    // Category Form Handler (Add / Edit)
+    document.getElementById('categoryForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const id = document.getElementById('catId').value;
+        const name = document.getElementById('catName').value.trim();
+        const description = document.getElementById('catDesc').value.trim();
+
+        try {
+            if (id) {
+                MockDB.updateCategory(id, { name, description });
+                MockDB.toast(`Category "${name}" updated successfully!`, 'success');
+            } else {
+                MockDB.createCategory({ name, description });
+                MockDB.toast(`Category "${name}" added successfully!`, 'success');
+            }
+            closeCategoryModal();
+            document.getElementById('categoryForm').reset();
+            populateEventModalDropdowns();
+            renderAll();
+            switchTab('categories');
+        } catch (err) {
+            MockDB.toast(err.message, 'error');
+        }
+    });
+
+    // Add Student Form Handler
+    document.getElementById('addStudentForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('stuName').value.trim();
+        const email = document.getElementById('stuEmail').value.trim();
+        const department = document.getElementById('stuDept').value.trim();
+        const year = document.getElementById('stuYear').value;
+
+        try {
+            const stu = MockDB.createStudent({ name, email, department, year });
+            MockDB.toast(`Student ${stu.name} registered (${stu.student_id})!`, 'success');
+            closeAddStudentModal();
+            document.getElementById('addStudentForm').reset();
+            renderAll();
+            switchTab('students');
+        } catch (err) {
+            MockDB.toast(err.message, 'error');
         }
     });
 });
 
 function switchTab(tabId) {
-    // Buttons
     document.querySelectorAll('.admin-tab-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
 
@@ -677,7 +1005,6 @@ function switchTab(tabId) {
     const sbBtn = document.getElementById('sbTab' + tabId.charAt(0).toUpperCase() + tabId.slice(1));
     if (sbBtn) sbBtn.classList.add('active');
 
-    // Panels
     document.querySelectorAll('.tab-content-panel').forEach(panel => panel.classList.remove('active'));
     const target = document.getElementById('panel-' + tabId);
     if (target) target.classList.add('active');
@@ -687,6 +1014,7 @@ function renderAll() {
     renderOverview();
     renderEventsManagerTable();
     renderCoordinatorsTable();
+    renderCategoriesTable();
     renderStudentsTable();
     renderBookingsTable();
     updateTabCounts();
@@ -695,12 +1023,19 @@ function renderAll() {
 
 function populateEventModalDropdowns() {
     const categories = MockDB.getCategories();
-    const catSelect = document.getElementById('evCategory');
-    catSelect.innerHTML = categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    const catOptions = categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    document.getElementById('evCategory').innerHTML = catOptions;
+    document.getElementById('editEvCategory').innerHTML = catOptions;
+
+    const eventCatFilter = document.getElementById('eventCatFilter');
+    if (eventCatFilter) {
+        eventCatFilter.innerHTML = '<option value="">All Categories</option>' + catOptions;
+    }
 
     const coords = MockDB.getCoordinators();
-    const coordSelect = document.getElementById('evCoordinator');
-    coordSelect.innerHTML = coords.map(c => `<option value="${c.email}">${c.name} (${c.department})</option>`).join('');
+    const coordOptions = coords.map(c => `<option value="${c.email}">${c.name} (${c.department})</option>`).join('');
+    document.getElementById('evCoordinator').innerHTML = coordOptions;
+    document.getElementById('editEvCoordinator').innerHTML = coordOptions;
 }
 
 function renderOverview() {
@@ -708,13 +1043,12 @@ function renderOverview() {
     const bookings = MockDB.getBookings();
     const coords = MockDB.getCoordinators();
 
-    const totalRev = bookings.reduce((sum, b) => sum + (b.total_amount || 0), 0);
+    const totalRev = bookings.filter(b => b.status === 'confirmed').reduce((sum, b) => sum + (b.total_amount || 0), 0);
     document.getElementById('metricTotalRev').textContent = '$' + totalRev.toFixed(2);
     document.getElementById('metricTotalEvents').textContent = events.length;
     document.getElementById('metricTotalBookings').textContent = bookings.length;
     document.getElementById('metricTotalCoords').textContent = coords.length;
 
-    // Recent bookings in overview
     const tbody = document.getElementById('overviewBookingsTable');
     tbody.innerHTML = bookings.slice(0, 5).map(b => `
         <tr>
@@ -723,27 +1057,47 @@ function renderOverview() {
             <td><strong>${b.event_title}</strong></td>
             <td>${b.quantity} Pass(es)</td>
             <td class="td-price" style="font-weight:700;">${b.total_amount === 0 ? 'Free' : '$' + b.total_amount.toFixed(2)}</td>
-            <td><span class="badge badge-success">${b.status}</span></td>
+            <td><span class="badge ${b.status === 'confirmed' ? 'badge-success' : 'badge-danger'}">${b.status.toUpperCase()}</span></td>
             <td>${b.booked_at}</td>
+            <td style="text-align:right;">
+                ${b.status === 'confirmed' ? `
+                    <button onclick="cancelBookingLive('${b.booking_reference}')" class="btn btn-outline-danger btn-sm" style="font-size:0.75rem; padding:3px 8px;">
+                        Cancel
+                    </button>
+                ` : '<span style="color:#94a3b8; font-size:0.75rem;">Cancelled</span>'}
+            </td>
         </tr>
     `).join('');
 }
 
-function renderEventsManagerTable() {
-    const events = MockDB.getEvents();
+function renderEventsManagerTable(eventsToRender = null) {
+    const events = eventsToRender || MockDB.getEvents();
     const tbody = document.getElementById('eventsManagerTable');
+
+    if (events.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:32px; color:#64748b;">No events found matching criteria.</td></tr>';
+        return;
+    }
 
     tbody.innerHTML = events.map(ev => {
         const booked = ev.max_capacity - ev.available_seats;
-        const pct = Math.round((booked / ev.max_capacity) * 100);
+        const pct = Math.min(100, Math.round((booked / ev.max_capacity) * 100));
         const price = ev.ticket_price === 0 ? 'Free' : '$' + ev.ticket_price.toFixed(2);
+        const fillClass = pct >= 90 ? 'fill-danger' : (pct >= 70 ? 'fill-warning' : '');
+
         return `
             <tr>
                 <td>
-                    <strong style="font-size:0.95rem;">${ev.title}</strong>
-                    <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">
-                        <span class="badge badge-secondary" style="font-size:0.7rem; padding:2px 6px;">${ev.category_name}</span>
-                        ${ev.is_featured ? '<span class="badge badge-amber" style="font-size:0.7rem; padding:2px 6px;">⭐ Featured</span>' : ''}
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <button onclick="toggleFeaturedLive(${ev.id})" style="border:none; background:none; cursor:pointer; font-size:1.1rem; padding:0;" title="${ev.is_featured ? 'Featured on homepage' : 'Click to feature'}">
+                            ${ev.is_featured ? '⭐' : '☆'}
+                        </button>
+                        <div>
+                            <strong style="font-size:0.95rem;">${ev.title}</strong>
+                            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">
+                                <span class="badge badge-secondary" style="font-size:0.7rem; padding:2px 6px;">${ev.category_name}</span>
+                            </div>
+                        </div>
                     </div>
                 </td>
                 <td>
@@ -755,30 +1109,30 @@ function renderEventsManagerTable() {
                     <div style="font-size:0.75rem; color:var(--text-muted);">${ev.start_time}</div>
                 </td>
                 <td>${ev.venue}</td>
-                <td style="min-width:160px;">
+                <td style="min-width:140px;">
                     <div class="capacity-labels" style="margin-bottom:3px; font-size:0.75rem;">
-                        <span><strong>${booked}</strong> / ${ev.max_capacity} booked</span>
+                        <span><strong>${booked}</strong> / ${ev.max_capacity}</span>
                         <span>${pct}%</span>
                     </div>
                     <div class="capacity-progress" style="height:6px;">
-                        <div class="capacity-fill" style="width:${pct}%;"></div>
+                        <div class="capacity-fill ${fillClass}" style="width:${pct}%;"></div>
                     </div>
                 </td>
                 <td class="td-price" style="font-weight:700;">${price}</td>
                 <td>
-                    <span class="badge ${ev.status === 'open' ? 'badge-success' : 'badge-danger'}">
-                        ${ev.status.toUpperCase()}
+                    <span class="badge ${ev.status === 'open' ? 'badge-success' : 'badge-danger'}" style="cursor:pointer;" onclick="toggleStatusLive(${ev.id})" title="Click to toggle status">
+                        ${ev.status.toUpperCase()} 🔄
                     </span>
                 </td>
-                <td style="text-align:right;">
-                    <button onclick="toggleEventStatus(${ev.id})" class="btn btn-outline-secondary btn-sm" style="font-size:0.75rem; padding:3px 7px;">
-                        ${ev.status === 'open' ? 'Close' : 'Open'}
+                <td style="text-align:right; white-space:nowrap;">
+                    <button onclick="openEditEventModal(${ev.id})" class="btn btn-outline-primary btn-sm" style="font-size:0.75rem; padding:4px 8px;" title="Edit Event">
+                        ✏️ Edit
                     </button>
-                    <a href="event-details.html?id=${ev.id}" target="_blank" class="btn btn-outline-primary btn-sm" style="font-size:0.75rem; padding:3px 7px;">
-                        View
+                    <a href="event-details.html?id=${ev.id}" target="_blank" class="btn btn-outline-secondary btn-sm" style="font-size:0.75rem; padding:4px 8px;" title="View Live Page">
+                        👁️ View
                     </a>
-                    <button onclick="deleteEvent(${ev.id})" class="btn btn-outline-secondary btn-sm" style="font-size:0.75rem; padding:3px 7px; color:#ef4444;" title="Delete">
-                        &times;
+                    <button onclick="deleteEventLive(${ev.id})" class="btn btn-outline-danger btn-sm" style="font-size:0.75rem; padding:4px 8px;" title="Delete Event">
+                        🗑️ Delete
                     </button>
                 </td>
             </tr>
@@ -786,21 +1140,85 @@ function renderEventsManagerTable() {
     }).join('');
 }
 
-function toggleEventStatus(id) {
-    const updated = MockDB.toggleEventStatus(id);
+function filterEventsTable() {
+    const search = (document.getElementById('eventSearchInput').value || '').toLowerCase();
+    const cat = document.getElementById('eventCatFilter').value;
+    const status = document.getElementById('eventStatusFilter').value;
+
+    let events = MockDB.getEvents();
+    if (search) {
+        events = events.filter(e => e.title.toLowerCase().includes(search) || e.venue.toLowerCase().includes(search) || e.coordinator_name.toLowerCase().includes(search));
+    }
+    if (cat) {
+        events = events.filter(e => e.category_id == cat);
+    }
+    if (status) {
+        events = events.filter(e => e.status === status);
+    }
+
+    renderEventsManagerTable(events);
+}
+
+function toggleStatusLive(id) {
+    const ev = MockDB.toggleEventStatus(id);
+    MockDB.toast(`Event status changed to: ${ev.status.toUpperCase()}`, 'info');
     renderAll();
 }
 
-function deleteEvent(id) {
-    if (confirm('Are you sure you want to permanently delete this event?')) {
-        MockDB.deleteEvent(id);
-        renderAll();
-    }
+function toggleFeaturedLive(id) {
+    const ev = MockDB.toggleEventFeatured(id);
+    MockDB.toast(`Event "${ev.title}" ${ev.is_featured ? 'featured on homepage' : 'unfeatured'}.`, 'info');
+    renderAll();
 }
 
-function renderCoordinatorsTable() {
-    const coords = MockDB.getCoordinators();
+function deleteEventLive(id) {
+    const ev = MockDB.getEventById(id);
+    MockDB.confirmModal({
+        title: 'Delete Campus Event',
+        message: `Are you sure you want to permanently delete <strong>"${ev ? ev.title : 'this event'}"</strong>? This cannot be undone.`,
+        confirmText: 'Delete Permanently',
+        confirmClass: 'btn-danger',
+        onConfirm: () => {
+            MockDB.deleteEvent(id);
+            MockDB.toast('Event deleted successfully!', 'success');
+            renderAll();
+        }
+    });
+}
+
+function openEditEventModal(id) {
+    const ev = MockDB.getEventById(id);
+    if (!ev) return;
+
+    document.getElementById('editEvId').value = ev.id;
+    document.getElementById('editEvTitle').value = ev.title;
+    document.getElementById('editEvCategory').value = ev.category_id;
+    document.getElementById('editEvCoordinator').value = ev.coordinator_email;
+    document.getElementById('editEvDate').value = ev.event_date;
+    document.getElementById('editEvStartTime').value = ev.start_time;
+    document.getElementById('editEvVenue').value = ev.venue;
+    document.getElementById('editEvStatus').value = ev.status;
+    document.getElementById('editEvPrice').value = ev.ticket_price;
+    document.getElementById('editEvCapacity').value = ev.max_capacity;
+    document.getElementById('editEvShortDesc').value = ev.short_description || '';
+    document.getElementById('editEvDescription').value = ev.description || '';
+    document.getElementById('editEvFeatured').checked = !!ev.is_featured;
+
+    document.getElementById('editEventModal').classList.add('open');
+}
+
+function closeEditEventModal() {
+    document.getElementById('editEventModal').classList.remove('open');
+}
+
+function renderCoordinatorsTable(coordsToRender = null) {
+    const coords = coordsToRender || MockDB.getCoordinators();
     const tbody = document.getElementById('coordinatorsTableBody');
+
+    if (coords.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:32px; color:#64748b;">No coordinators found.</td></tr>';
+        return;
+    }
 
     tbody.innerHTML = coords.map(c => `
         <tr>
@@ -819,34 +1237,117 @@ function renderCoordinatorsTable() {
                     ${c.status === 'active' ? 'Active Privileges' : 'Suspended by Admin'}
                 </span>
             </td>
-            <td style="text-align:right;">
-                <button onclick="toggleCoordStatus(${c.id})" class="btn ${c.status === 'active' ? 'btn-outline-secondary' : 'btn-primary'} btn-sm" style="font-size:0.75rem; padding:4px 8px;">
+            <td style="text-align:right; white-space:nowrap;">
+                <button onclick="toggleCoordStatusLive(${c.id})" class="btn ${c.status === 'active' ? 'btn-outline-secondary' : 'btn-primary'} btn-sm" style="font-size:0.75rem; padding:4px 8px;">
                     ${c.status === 'active' ? 'Revoke Access' : 'Restore Access'}
                 </button>
-                <button onclick="removeCoord(${c.id})" class="btn btn-outline-secondary btn-sm" style="font-size:0.75rem; padding:4px 8px; color:#ef4444; margin-left:4px;" title="Delete">
-                    &times;
+                <button onclick="deleteCoordLive(${c.id})" class="btn btn-outline-danger btn-sm" style="font-size:0.75rem; padding:4px 8px; margin-left:4px;" title="Delete">
+                    🗑️
                 </button>
             </td>
         </tr>
     `).join('');
 }
 
-function toggleCoordStatus(id) {
+function filterCoordinatorsTable() {
+    const search = (document.getElementById('coordSearchInput').value || '').toLowerCase();
+    let coords = MockDB.getCoordinators();
+    if (search) {
+        coords = coords.filter(c => c.name.toLowerCase().includes(search) || c.email.toLowerCase().includes(search) || c.department.toLowerCase().includes(search));
+    }
+    renderCoordinatorsTable(coords);
+}
+
+function toggleCoordStatusLive(id) {
     const coord = MockDB.toggleCoordinatorStatus(id);
-    alert(`Access status for ${coord.name} changed to: ${coord.status.toUpperCase()}`);
+    MockDB.toast(`Coordinator ${coord.name} is now ${coord.status.toUpperCase()}.`, 'info');
     renderAll();
 }
 
-function removeCoord(id) {
-    if (confirm('Are you sure you want to permanently remove this Faculty Coordinator?')) {
-        MockDB.deleteCoordinator(id);
-        renderAll();
-    }
+function deleteCoordLive(id) {
+    MockDB.confirmModal({
+        title: 'Remove Coordinator Access',
+        message: 'Are you sure you want to remove this faculty coordinator?',
+        confirmText: 'Remove Access',
+        confirmClass: 'btn-danger',
+        onConfirm: () => {
+            MockDB.deleteCoordinator(id);
+            MockDB.toast('Coordinator removed successfully!', 'success');
+            renderAll();
+        }
+    });
 }
 
-function renderStudentsTable() {
-    const students = MockDB.getStudents();
+function renderCategoriesTable() {
+    const categories = MockDB.getCategories();
+    const tbody = document.getElementById('categoriesTableBody');
+
+    tbody.innerHTML = categories.map(c => `
+        <tr>
+            <td><strong>${c.name}</strong></td>
+            <td><code>${c.slug}</code></td>
+            <td style="color:#64748b; font-size:0.85rem;">${c.description || '—'}</td>
+            <td><span class="badge badge-primary">${c.event_count || 0} Events</span></td>
+            <td style="text-align:right; white-space:nowrap;">
+                <button onclick="openEditCategoryModal(${c.id})" class="btn btn-outline-primary btn-sm" style="font-size:0.75rem; padding:4px 8px;">
+                    ✏️ Edit
+                </button>
+                <button onclick="deleteCategoryLive(${c.id})" class="btn btn-outline-danger btn-sm" style="font-size:0.75rem; padding:4px 8px; margin-left:4px;">
+                    🗑️
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function openAddCategoryModal() {
+    document.getElementById('categoryModalTitle').textContent = 'Add Academic Category';
+    document.getElementById('catSubmitBtn').textContent = 'Save Category';
+    document.getElementById('catId').value = '';
+    document.getElementById('catName').value = '';
+    document.getElementById('catDesc').value = '';
+    document.getElementById('categoryModal').classList.add('open');
+}
+
+function openEditCategoryModal(id) {
+    const categories = MockDB.getCategories();
+    const cat = categories.find(c => c.id == id);
+    if (!cat) return;
+
+    document.getElementById('categoryModalTitle').textContent = 'Edit Academic Category';
+    document.getElementById('catSubmitBtn').textContent = 'Update Category';
+    document.getElementById('catId').value = cat.id;
+    document.getElementById('catName').value = cat.name;
+    document.getElementById('catDesc').value = cat.description || '';
+    document.getElementById('categoryModal').classList.add('open');
+}
+
+function closeCategoryModal() {
+    document.getElementById('categoryModal').classList.remove('open');
+}
+
+function deleteCategoryLive(id) {
+    MockDB.confirmModal({
+        title: 'Delete Category',
+        message: 'Are you sure you want to delete this category?',
+        confirmText: 'Delete Category',
+        confirmClass: 'btn-danger',
+        onConfirm: () => {
+            MockDB.deleteCategory(id);
+            MockDB.toast('Category deleted!', 'success');
+            renderAll();
+        }
+    });
+}
+
+function renderStudentsTable(studentsToRender = null) {
+    const students = studentsToRender || MockDB.getStudents();
     const tbody = document.getElementById('studentsTableBody');
+
+    if (students.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:32px; color:#64748b;">No students found.</td></tr>';
+        return;
+    }
 
     tbody.innerHTML = students.map(s => `
         <tr>
@@ -855,15 +1356,59 @@ function renderStudentsTable() {
             <td>${s.email}</td>
             <td>${s.department}</td>
             <td>${s.year}</td>
-            <td><strong>${s.total_bookings}</strong> bookings</td>
-            <td><span class="badge badge-success">Enrolled</span></td>
+            <td><strong>${s.total_bookings || 0}</strong> orders</td>
+            <td><span class="badge badge-success">Active</span></td>
+            <td style="text-align:right;">
+                <button onclick="deleteStudentLive(${s.id})" class="btn btn-outline-danger btn-sm" style="font-size:0.75rem; padding:4px 8px;">
+                    🗑️ Remove
+                </button>
+            </td>
         </tr>
     `).join('');
 }
 
-function renderBookingsTable() {
-    const bookings = MockDB.getBookings();
+function filterStudentsTable() {
+    const search = (document.getElementById('studentSearchInput').value || '').toLowerCase();
+    let students = MockDB.getStudents();
+    if (search) {
+        students = students.filter(s => s.name.toLowerCase().includes(search) || s.email.toLowerCase().includes(search) || s.student_id.toLowerCase().includes(search));
+    }
+    renderStudentsTable(students);
+}
+
+function openAddStudentModal() {
+    document.getElementById('addStudentModal').classList.add('open');
+}
+
+function closeAddStudentModal() {
+    document.getElementById('addStudentModal').classList.remove('open');
+}
+
+function deleteStudentLive(id) {
+    MockDB.confirmModal({
+        title: 'Remove Student',
+        message: 'Are you sure you want to remove this student record?',
+        confirmText: 'Remove',
+        confirmClass: 'btn-danger',
+        onConfirm: () => {
+            MockDB.deleteStudent(id);
+            MockDB.toast('Student record removed!', 'success');
+            renderAll();
+        }
+    });
+}
+
+function renderBookingsTable(bookingsToRender = null) {
+    const bookings = bookingsToRender || MockDB.getBookings();
     const tbody = document.getElementById('adminBookingsTable');
+
+    const totalRev = bookings.filter(b => b.status === 'confirmed').reduce((sum, b) => sum + (b.total_amount || 0), 0);
+    document.getElementById('bookingsLedgerTotal').textContent = '$' + totalRev.toFixed(2);
+
+    if (bookings.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:32px; color:#64748b;">No bookings on record.</td></tr>';
+        return;
+    }
 
     tbody.innerHTML = bookings.map(b => `
         <tr>
@@ -872,15 +1417,49 @@ function renderBookingsTable() {
             <td><strong>${b.event_title}</strong></td>
             <td>${b.quantity}</td>
             <td class="td-price" style="font-weight:700;">${b.total_amount === 0 ? 'Free' : '$' + b.total_amount.toFixed(2)}</td>
-            <td><span class="badge badge-success">${b.status}</span></td>
+            <td><span class="badge ${b.status === 'confirmed' ? 'badge-success' : 'badge-danger'}">${b.status.toUpperCase()}</span></td>
             <td>${b.booked_at}</td>
+            <td style="text-align:right; white-space:nowrap;">
+                ${b.status === 'confirmed' ? `
+                    <button onclick="cancelBookingLive('${b.booking_reference}')" class="btn btn-outline-danger btn-sm" style="font-size:0.75rem; padding:4px 8px;">
+                        Cancel & Refund
+                    </button>
+                ` : '<span style="color:#94a3b8; font-size:0.75rem;">Cancelled</span>'}
+                <a href="ticket-view.html?code=${b.attendees && b.attendees[0] ? b.attendees[0].ticket_code : ''}" target="_blank" class="btn btn-outline-secondary btn-sm" style="font-size:0.75rem; padding:4px 8px;">
+                    🎟️ View Pass
+                </a>
+            </td>
         </tr>
     `).join('');
+}
+
+function filterBookingsTable() {
+    const search = (document.getElementById('bookingSearchInput').value || '').toLowerCase();
+    let bookings = MockDB.getBookings();
+    if (search) {
+        bookings = bookings.filter(b => b.booking_reference.toLowerCase().includes(search) || b.user_name.toLowerCase().includes(search) || b.event_title.toLowerCase().includes(search));
+    }
+    renderBookingsTable(bookings);
+}
+
+function cancelBookingLive(ref) {
+    MockDB.confirmModal({
+        title: 'Cancel Booking & Release Seats',
+        message: `Are you sure you want to cancel booking <strong>${ref}</strong>? This will release reserved seats back to the event capacity.`,
+        confirmText: 'Cancel Booking',
+        confirmClass: 'btn-danger',
+        onConfirm: () => {
+            MockDB.cancelBooking(ref, 'Cancelled by Admin');
+            MockDB.toast(`Booking ${ref} cancelled and seats released!`, 'success');
+            renderAll();
+        }
+    });
 }
 
 function updateTabCounts() {
     document.getElementById('tabCountEvents').textContent = MockDB.getEvents().length;
     document.getElementById('tabCountCoords').textContent = MockDB.getCoordinators().length;
+    document.getElementById('tabCountCategories').textContent = MockDB.getCategories().length;
     document.getElementById('tabCountStudents').textContent = MockDB.getStudents().length;
     document.getElementById('tabCountBookings').textContent = MockDB.getBookings().length;
 }
@@ -934,21 +1513,19 @@ function renderCharts() {
         donutCanvas.height = 200;
         const centerX = 100, centerY = 100;
         
-        const slices = [
-            { val: 2, color: '#1e40af' },
-            { val: 1, color: '#059669' },
-            { val: 2, color: '#d97706' }
-        ];
-        const total = 5;
+        const categories = MockDB.getCategories();
+        const colors = ['#1e40af', '#059669', '#d97706', '#9333ea', '#ef4444'];
+        const total = categories.reduce((sum, c) => sum + (c.event_count || 1), 0) || 1;
         let startAngle = -Math.PI / 2;
 
-        slices.forEach(s => {
-            const angle = (s.val / total) * 2 * Math.PI;
+        categories.forEach((cat, idx) => {
+            const val = cat.event_count || 1;
+            const angle = (val / total) * 2 * Math.PI;
             ctx.beginPath();
             ctx.arc(centerX, centerY, 70, startAngle, startAngle + angle);
             ctx.arc(centerX, centerY, 40, startAngle + angle, startAngle, true);
             ctx.closePath();
-            ctx.fillStyle = s.color;
+            ctx.fillStyle = colors[idx % colors.length];
             ctx.fill();
             startAngle += angle;
         });

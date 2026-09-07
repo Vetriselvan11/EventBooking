@@ -1,14 +1,14 @@
 /**
  * CampusEvent Hub — Client-Side Mock Database Engine (mock-db.js)
- * Enables 100% functional browsing, booking, payment, Event CRUD, RBAC access control, and coordinator management
+ * Enterprise LocalStorage Store with Real-Time Reactive State, Full Live Admin CRUD & Toast Notifications
  */
 
 const SEED_CATEGORIES = [
-  { id: 1, name: 'Technology & Coding', slug: 'technology-coding', event_count: 2 },
-  { id: 2, name: 'Academic Conferences', slug: 'academic-conferences', event_count: 1 },
-  { id: 3, name: 'Career & Industry Networking', slug: 'career-networking', event_count: 2 },
-  { id: 4, name: 'Cultural & Arts', slug: 'cultural-arts', event_count: 2 },
-  { id: 5, name: 'Athletics & Sports', slug: 'athletics-sports', event_count: 1 }
+  { id: 1, name: 'Technology & Coding', slug: 'technology-coding', description: 'Hackathons, cloud summits, and AI bootcamps', icon: 'terminal', event_count: 2 },
+  { id: 2, name: 'Academic Conferences', slug: 'academic-conferences', description: 'Research symposiums, keynote lectures, and seminars', icon: 'book-open', event_count: 1 },
+  { id: 3, name: 'Career & Industry Networking', slug: 'career-networking', description: 'Job fairs, corporate roundtables, and resume clinics', icon: 'briefcase', event_count: 2 },
+  { id: 4, name: 'Cultural & Arts', slug: 'cultural-arts', description: 'Musical galas, theatrical plays, and gallery exhibits', icon: 'music', event_count: 2 },
+  { id: 5, name: 'Athletics & Sports', slug: 'athletics-sports', description: 'Inter-collegiate championships and athletic meets', icon: 'trophy', event_count: 1 }
 ];
 
 const SEED_COORDINATORS = [
@@ -252,7 +252,7 @@ class MockDB {
       localStorage.setItem('ceh_bookings', JSON.stringify(SEED_BOOKINGS));
     }
     if (!localStorage.getItem('ceh_user')) {
-      // Default to student user
+      // Default guest / student state
       localStorage.setItem('ceh_user', JSON.stringify({
         id: 4,
         name: 'Alexander Wright',
@@ -264,6 +264,9 @@ class MockDB {
     }
   }
 
+  /* =========================================================================
+     EVENTS CRUD
+     ========================================================================= */
   static getEvents() {
     this.init();
     return JSON.parse(localStorage.getItem('ceh_events') || '[]');
@@ -303,34 +306,52 @@ class MockDB {
       max_capacity: maxCap,
       available_seats: maxCap,
       registration_deadline: data.registration_deadline || data.event_date + ' 18:00',
-      status: 'open',
+      status: data.status || 'open',
       is_featured: data.is_featured ? 1 : 0
     };
 
     events.unshift(newEvent);
     localStorage.setItem('ceh_events', JSON.stringify(events));
-
-    // Update category count
-    if (matchedCat) {
-      matchedCat.event_count = (matchedCat.event_count || 0) + 1;
-      localStorage.setItem('ceh_categories', JSON.stringify(categories));
-    }
-
-    // Update coordinator count
-    const coords = this.getCoordinators();
-    const coord = coords.find(c => c.name === data.coordinator_name || c.email === data.coordinator_email);
-    if (coord) {
-      coord.assigned_events = (coord.assigned_events || 0) + 1;
-      localStorage.setItem('ceh_coordinators', JSON.stringify(coords));
-    }
-
+    this.recalculateCategoryAndCoordCounts();
     return newEvent;
+  }
+
+  static updateEvent(id, data) {
+    const events = this.getEvents();
+    const idx = events.findIndex(e => e.id == id);
+    if (idx === -1) throw new Error('Event not found');
+
+    const prev = events[idx];
+    const catId = parseInt(data.category_id !== undefined ? data.category_id : prev.category_id, 10);
+    const categories = this.getCategories();
+    const matchedCat = categories.find(c => c.id == catId);
+    const catName = matchedCat ? matchedCat.name : prev.category_name;
+
+    const newMax = data.max_capacity !== undefined ? parseInt(data.max_capacity, 10) : prev.max_capacity;
+    const bookedCount = prev.max_capacity - prev.available_seats;
+    const newAvail = Math.max(0, newMax - bookedCount);
+
+    events[idx] = {
+      ...prev,
+      ...data,
+      category_id: catId,
+      category_name: catName,
+      max_capacity: newMax,
+      available_seats: newAvail,
+      ticket_price: data.ticket_price !== undefined ? parseFloat(data.ticket_price) : prev.ticket_price,
+      is_featured: data.is_featured !== undefined ? (data.is_featured ? 1 : 0) : prev.is_featured
+    };
+
+    localStorage.setItem('ceh_events', JSON.stringify(events));
+    this.recalculateCategoryAndCoordCounts();
+    return events[idx];
   }
 
   static deleteEvent(id) {
     let events = this.getEvents();
     events = events.filter(e => e.id != id);
     localStorage.setItem('ceh_events', JSON.stringify(events));
+    this.recalculateCategoryAndCoordCounts();
   }
 
   static toggleEventStatus(id) {
@@ -342,11 +363,62 @@ class MockDB {
     return event;
   }
 
+  static toggleEventFeatured(id) {
+    const events = this.getEvents();
+    const event = events.find(e => e.id == id);
+    if (!event) throw new Error('Event not found');
+    event.is_featured = event.is_featured ? 0 : 1;
+    localStorage.setItem('ceh_events', JSON.stringify(events));
+    return event;
+  }
+
+  /* =========================================================================
+     CATEGORIES CRUD
+     ========================================================================= */
   static getCategories() {
     this.init();
     return JSON.parse(localStorage.getItem('ceh_categories') || '[]');
   }
 
+  static createCategory(data) {
+    const categories = this.getCategories();
+    const slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const newCat = {
+      id: Date.now(),
+      name: data.name,
+      slug: slug,
+      description: data.description || 'Academic events and student workshops',
+      icon: data.icon || 'tag',
+      event_count: 0
+    };
+    categories.push(newCat);
+    localStorage.setItem('ceh_categories', JSON.stringify(categories));
+    return newCat;
+  }
+
+  static updateCategory(id, data) {
+    const categories = this.getCategories();
+    const cat = categories.find(c => c.id == id);
+    if (!cat) throw new Error('Category not found');
+    if (data.name) {
+      cat.name = data.name;
+      cat.slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    }
+    if (data.description !== undefined) cat.description = data.description;
+    if (data.icon) cat.icon = data.icon;
+    localStorage.setItem('ceh_categories', JSON.stringify(categories));
+    return cat;
+  }
+
+  static deleteCategory(id) {
+    let categories = this.getCategories();
+    categories = categories.filter(c => c.id != id);
+    localStorage.setItem('ceh_categories', JSON.stringify(categories));
+  }
+
+  /* =========================================================================
+     COORDINATORS CRUD
+     ========================================================================= */
   static getCoordinators() {
     this.init();
     return JSON.parse(localStorage.getItem('ceh_coordinators') || '[]');
@@ -356,7 +428,7 @@ class MockDB {
     const coords = this.getCoordinators();
     const existing = coords.find(c => c.email.toLowerCase() === data.email.toLowerCase());
     if (existing) {
-      throw new Error('A coordinator with this email already exists.');
+      throw new Error('A faculty coordinator with this email already exists.');
     }
     const newCoord = {
       id: Date.now(),
@@ -371,6 +443,20 @@ class MockDB {
     coords.push(newCoord);
     localStorage.setItem('ceh_coordinators', JSON.stringify(coords));
     return newCoord;
+  }
+
+  static updateCoordinator(id, data) {
+    const coords = this.getCoordinators();
+    const coord = coords.find(c => c.id == id);
+    if (!coord) throw new Error('Coordinator not found');
+    if (data.name) coord.name = data.name;
+    if (data.email) coord.email = data.email;
+    if (data.department) coord.department = data.department;
+    if (data.designation) coord.designation = data.designation;
+    if (data.phone) coord.phone = data.phone;
+    if (data.status) coord.status = data.status;
+    localStorage.setItem('ceh_coordinators', JSON.stringify(coords));
+    return coord;
   }
 
   static toggleCoordinatorStatus(id) {
@@ -388,11 +474,42 @@ class MockDB {
     localStorage.setItem('ceh_coordinators', JSON.stringify(coords));
   }
 
+  /* =========================================================================
+     STUDENTS CRUD
+     ========================================================================= */
   static getStudents() {
     this.init();
     return JSON.parse(localStorage.getItem('ceh_students') || '[]');
   }
 
+  static createStudent(data) {
+    const students = this.getStudents();
+    const existing = students.find(s => s.email.toLowerCase() === data.email.toLowerCase());
+    if (existing) throw new Error('A student with this email is already registered.');
+    const newStu = {
+      id: Date.now(),
+      student_id: 'STU-' + new Date().getFullYear() + '-' + Math.floor(1000 + Math.random() * 9000),
+      name: data.name,
+      email: data.email,
+      department: data.department || 'General Studies',
+      year: data.year || '1st Year',
+      total_bookings: 0,
+      status: 'active'
+    };
+    students.push(newStu);
+    localStorage.setItem('ceh_students', JSON.stringify(students));
+    return newStu;
+  }
+
+  static deleteStudent(id) {
+    let students = this.getStudents();
+    students = students.filter(s => s.id != id);
+    localStorage.setItem('ceh_students', JSON.stringify(students));
+  }
+
+  /* =========================================================================
+     BOOKINGS & ORDERS
+     ========================================================================= */
   static getBookings() {
     this.init();
     return JSON.parse(localStorage.getItem('ceh_bookings') || '[]');
@@ -420,7 +537,7 @@ class MockDB {
     const newBooking = {
       id: Date.now(),
       booking_reference: ref,
-      user_id: data.user.id,
+      user_id: data.user.id || 4,
       user_name: data.user.name,
       user_email: data.user.email,
       event_id: event.id,
@@ -444,6 +561,15 @@ class MockDB {
 
     bookings.unshift(newBooking);
     localStorage.setItem('ceh_bookings', JSON.stringify(bookings));
+
+    // Update student booking count
+    const students = this.getStudents();
+    const student = students.find(s => s.email.toLowerCase() === (data.user.email || '').toLowerCase());
+    if (student) {
+      student.total_bookings = (student.total_bookings || 0) + 1;
+      localStorage.setItem('ceh_students', JSON.stringify(students));
+    }
+
     return newBooking;
   }
 
@@ -453,14 +579,14 @@ class MockDB {
     if (!booking) throw new Error('Booking not found');
     
     booking.status = 'cancelled';
-    booking.cancellation_reason = reason || 'Requested by student';
+    booking.cancellation_reason = reason || 'Cancelled by administrator / student';
     
     // Restore seats
     const events = this.getEvents();
     const event = events.find(e => e.id == booking.event_id);
     if (event) {
       event.available_seats += booking.quantity;
-      if (event.status === 'full') event.status = 'open';
+      if (event.status === 'full' || event.status === 'closed') event.status = 'open';
       localStorage.setItem('ceh_events', JSON.stringify(events));
     }
 
@@ -468,6 +594,44 @@ class MockDB {
     return booking;
   }
 
+  static deleteBooking(id) {
+    let bookings = this.getBookings();
+    const booking = bookings.find(b => b.id == id);
+    if (booking && booking.status === 'confirmed') {
+      const events = this.getEvents();
+      const event = events.find(e => e.id == booking.event_id);
+      if (event) {
+        event.available_seats += booking.quantity;
+        if (event.status === 'full') event.status = 'open';
+        localStorage.setItem('ceh_events', JSON.stringify(events));
+      }
+    }
+    bookings = bookings.filter(b => b.id != id);
+    localStorage.setItem('ceh_bookings', JSON.stringify(bookings));
+  }
+
+  /* =========================================================================
+     RECALCULATE STATS HELPER
+     ========================================================================= */
+  static recalculateCategoryAndCoordCounts() {
+    const events = this.getEvents();
+    const categories = this.getCategories();
+    const coords = this.getCoordinators();
+
+    categories.forEach(cat => {
+      cat.event_count = events.filter(e => e.category_id == cat.id).length;
+    });
+    localStorage.setItem('ceh_categories', JSON.stringify(categories));
+
+    coords.forEach(coord => {
+      coord.assigned_events = events.filter(e => e.coordinator_name === coord.name || e.coordinator_email === coord.email).length;
+    });
+    localStorage.setItem('ceh_coordinators', JSON.stringify(coords));
+  }
+
+  /* =========================================================================
+     AUTH & SESSION
+     ========================================================================= */
   static getCurrentUser() {
     this.init();
     const userStr = localStorage.getItem('ceh_user');
@@ -486,35 +650,33 @@ class MockDB {
   static resetDatabase() {
     localStorage.clear();
     MockDB.init();
-    alert('Mock Database restored to default seed state.');
-    window.location.reload();
+    MockDB.toast('Database successfully restored to default seed state.', 'success');
+    setTimeout(() => window.location.reload(), 600);
   }
 
-  /**
-   * Enforces Role-Based Access Control on HTML pages.
-   */
+  /* =========================================================================
+     RBAC ENFORCEMENT
+     ========================================================================= */
   static requireRole(allowedRoles) {
     const user = this.getCurrentUser();
 
-    // 1. Not logged in
     if (!user) {
       this.renderAccessDenied(
         'Authentication Required',
-        'You must sign in to view this protected resource.',
+        'You must sign in to view this protected console.',
         'login.html',
         'Sign In'
       );
       throw new Error('Access Denied: Unauthenticated');
     }
 
-    // 2. Check if user is a suspended coordinator
     if (user.role === 'coordinator') {
       const coords = this.getCoordinators();
       const currentCoord = coords.find(c => c.email.toLowerCase() === user.email.toLowerCase());
       if (currentCoord && currentCoord.status === 'suspended') {
         this.renderAccessDenied(
           'Coordinator Access Suspended',
-          'Your Faculty Coordinator access privileges have been suspended by the System Administrator. Please contact the administration office.',
+          'Your Faculty Coordinator access privileges have been suspended by the System Administrator.',
           'login.html',
           'Sign In with Another Account'
         );
@@ -522,13 +684,12 @@ class MockDB {
       }
     }
 
-    // 3. Role mismatch
     const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
     if (!roles.includes(user.role)) {
       let roleDesc = roles.map(r => r.toUpperCase()).join(' or ');
       this.renderAccessDenied(
         '403 — Access Denied (Restricted Area)',
-        `You are currently logged in as a <strong>${user.role.toUpperCase()}</strong> (${user.name}).<br>This console requires <strong>${roleDesc}</strong> privileges. Regular users and students are strictly blocked from accessing administrator and coordinator controls.`,
+        `You are logged in as <strong>${user.role.toUpperCase()}</strong> (${user.name}).<br>This console requires <strong>${roleDesc}</strong> privileges.`,
         user.role === 'student' ? 'student-dashboard.html' : 'index.html',
         user.role === 'student' ? 'Return to Student Hub' : 'Return to Home'
       );
@@ -539,40 +700,29 @@ class MockDB {
   static renderAccessDenied(title, message, returnUrl, returnText) {
     document.body.innerHTML = `
       <div style="min-height:100vh; background:#0f172a; display:flex; align-items:center; justify-content:center; padding:20px; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
-        <div style="max-width:540px; width:100%; background:#ffffff; border-radius:12px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.5); overflow:hidden; border:1px solid #e2e8f0; text-align:center;">
+        <div style="max-width:520px; width:100%; background:#ffffff; border-radius:12px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.5); overflow:hidden; border:1px solid #e2e8f0; text-align:center;">
           <div style="background:#fee2e2; padding:24px 20px; border-bottom:1px solid #fecaca;">
-            <div style="width:56px; height:56px; background:#ef4444; color:#fff; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin-bottom:12px; box-shadow:0 4px 12px rgba(239,68,68,0.35);">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 9v3.75m0-10.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/><path d="M12 15.75h.007v.008H12v-.008z"/></svg>
+            <div style="width:52px; height:52px; background:#ef4444; color:#fff; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin-bottom:10px;">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 9v3.75m0-10.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/><path d="M12 15.75h.007v.008H12v-.008z"/></svg>
             </div>
-            <h2 style="font-size:1.4rem; font-weight:800; color:#991b1b; margin:0 0 6px 0;">${title}</h2>
-            <div style="display:inline-block; padding:3px 10px; background:#991b1b; color:#fff; font-size:0.75rem; font-weight:700; border-radius:999px; letter-spacing:0.05em; text-transform:uppercase;">
-              Security Barrier (RBAC Guard)
-            </div>
+            <h2 style="font-size:1.35rem; font-weight:800; color:#991b1b; margin:0 0 4px 0;">${title}</h2>
           </div>
-          <div style="padding:28px 24px;">
-            <p style="font-size:0.95rem; color:#475569; line-height:1.6; margin-bottom:24px;">
-              ${message}
-            </p>
+          <div style="padding:24px;">
+            <p style="font-size:0.92rem; color:#475569; line-height:1.6; margin-bottom:20px;">${message}</p>
             <div style="display:flex; flex-direction:column; gap:10px;">
-              <a href="${returnUrl}" style="display:inline-block; padding:12px 20px; background:#1e40af; color:#ffffff; font-weight:600; text-decoration:none; border-radius:6px; font-size:0.9rem; transition:background 0.2s;">
+              <a href="${returnUrl}" style="display:inline-block; padding:11px 18px; background:#1e40af; color:#ffffff; font-weight:600; text-decoration:none; border-radius:6px; font-size:0.9rem;">
                 &larr; ${returnText}
               </a>
-              <a href="login.html" style="display:inline-block; padding:10px 20px; background:#f1f5f9; color:#334155; font-weight:600; text-decoration:none; border-radius:6px; font-size:0.85rem; border:1px solid #cbd5e1;">
-                Switch User / Login As Different Role
+              <a href="login.html" style="display:inline-block; padding:10px 18px; background:#f1f5f9; color:#334155; font-weight:600; text-decoration:none; border-radius:6px; font-size:0.85rem; border:1px solid #cbd5e1;">
+                Switch User / Login
               </a>
             </div>
-          </div>
-          <div style="background:#f8fafc; padding:12px; border-top:1px solid #e2e8f0; font-size:0.75rem; color:#64748b;">
-            CampusEvent Hub Access Enforcement System &bull; Active Role Check
           </div>
         </div>
       </div>
     `;
   }
 
-  /**
-   * Dynamically renders role-appropriate header navigation
-   */
   static renderHeaderNav(activePage = '') {
     const user = this.getCurrentUser();
     const navList = document.querySelector('.main-nav .nav-list');
@@ -581,15 +731,15 @@ class MockDB {
     if (navList) {
       let navHtml = `
         <li><a href="index.html" class="nav-link ${activePage === 'home' ? 'active' : ''}">Home</a></li>
-        <li><a href="events.html" class="nav-link ${activePage === 'events' ? 'active' : ''}">Catalog</a></li>
+        <li><a href="events.html" class="nav-link ${activePage === 'events' ? 'active' : ''}">Discover Events</a></li>
         <li><a href="verify-ticket.html" class="nav-link ${activePage === 'verify' ? 'active' : ''}">Verify Pass</a></li>
       `;
 
       if (user) {
         if (user.role === 'student') {
-          navHtml += `<li><a href="student-dashboard.html" class="nav-link nav-link-portal ${activePage === 'student' ? 'active' : ''}">My Passes (Student)</a></li>`;
+          navHtml += `<li><a href="student-dashboard.html" class="nav-link nav-link-portal ${activePage === 'student' ? 'active' : ''}">Student Hub</a></li>`;
         } else if (user.role === 'coordinator') {
-          navHtml += `<li><a href="coordinator-dashboard.html" class="nav-link nav-link-portal ${activePage === 'coordinator' ? 'active' : ''}">Coordinator Console</a></li>`;
+          navHtml += `<li><a href="coordinator-dashboard.html" class="nav-link nav-link-portal ${activePage === 'coordinator' ? 'active' : ''}">Coordinator Desk</a></li>`;
         } else if (user.role === 'admin') {
           navHtml += `<li><a href="admin-dashboard.html" class="nav-link nav-link-portal ${activePage === 'admin' ? 'active' : ''}">Admin Console</a></li>`;
         }
@@ -607,7 +757,7 @@ class MockDB {
               <span style="font-size:0.85rem; font-weight:700; color:var(--text-primary);">${user.name}</span>
               <span style="font-size:0.72rem; font-weight:700; text-transform:uppercase; color:${badgeColor};">${user.role}</span>
             </div>
-            <button onclick="MockDB.logout()" class="btn btn-outline-secondary btn-sm" style="padding:5px 10px; font-size:0.78rem;">
+            <button onclick="MockDB.logout()" class="btn btn-outline-secondary btn-sm" style="padding:5px 12px; font-size:0.8rem;">
               Sign Out
             </button>
           </div>
@@ -620,7 +770,133 @@ class MockDB {
       }
     }
   }
+
+  /* =========================================================================
+     MODERN TOAST NOTIFICATION ENGINE
+     ========================================================================= */
+  static toast(message, type = 'success', duration = 3200) {
+    let container = document.getElementById('cehToastContainer');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'cehToastContainer';
+      container.style.cssText = `
+        position: fixed;
+        top: 24px;
+        right: 24px;
+        z-index: 99999;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        pointer-events: none;
+        max-width: 380px;
+        width: 100%;
+      `;
+      document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+      background: #0f172a;
+      color: #ffffff;
+      padding: 14px 18px;
+      border-radius: 8px;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3), 0 8px 10px -6px rgba(0,0,0,0.2);
+      border-left: 4px solid ${type === 'success' ? '#22c55e' : (type === 'error' ? '#ef4444' : (type === 'warning' ? '#f59e0b' : '#3b82f6'))};
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      line-height: 1.4;
+      pointer-events: auto;
+      transform: translateX(120%);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+      opacity: 0;
+    `;
+
+    const iconMap = {
+      success: '✓',
+      error: '✕',
+      warning: '⚠',
+      info: 'ℹ'
+    };
+
+    toast.innerHTML = `
+      <span style="font-size:1.1rem; font-weight:800; color:${type === 'success' ? '#4ade80' : (type === 'error' ? '#f87171' : (type === 'warning' ? '#fbbf24' : '#60a5fa'))}">
+        ${iconMap[type] || 'ℹ'}
+      </span>
+      <div style="flex:1;">${message}</div>
+      <button style="background:none; border:none; color:#94a3b8; font-size:1.2rem; cursor:pointer; padding:0 4px; line-height:1;" onclick="this.parentElement.remove()">&times;</button>
+    `;
+
+    container.appendChild(toast);
+    requestAnimationFrame(() => {
+      toast.style.transform = 'translateX(0)';
+      toast.style.opacity = '1';
+    });
+
+    setTimeout(() => {
+      toast.style.transform = 'translateX(120%)';
+      toast.style.opacity = '0';
+      setTimeout(() => toast.remove(), 250);
+    }, duration);
+  }
+
+  /* =========================================================================
+     CUSTOM CONFIRM MODAL
+     ========================================================================= */
+  static confirmModal({ title = 'Confirm Action', message = 'Are you sure?', confirmText = 'Confirm', confirmClass = 'btn-primary', onConfirm }) {
+    let modal = document.getElementById('cehConfirmModal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'cehConfirmModal';
+      modal.style.cssText = `
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(15, 23, 42, 0.65);
+        backdrop-filter: blur(4px);
+        z-index: 10000;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      `;
+      document.body.appendChild(modal);
+    }
+
+    modal.innerHTML = `
+      <div style="background:#ffffff; border-radius:12px; max-width:440px; width:100%; box-shadow:0 25px 50px -12px rgba(0,0,0,0.3); border:1px solid #e2e8f0; overflow:hidden; animation: modalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);">
+        <div style="padding:20px 24px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center;">
+          <h3 style="font-size:1.1rem; font-weight:700; color:#0f172a; margin:0;">${title}</h3>
+          <button id="cehConfirmClose" style="border:none; background:none; font-size:1.3rem; cursor:pointer; color:#64748b;">&times;</button>
+        </div>
+        <div style="padding:22px 24px; font-size:0.92rem; color:#475569; line-height:1.5;">
+          ${message}
+        </div>
+        <div style="padding:16px 24px; background:#f8fafc; border-top:1px solid #e2e8f0; display:flex; justify-content:flex-end; gap:10px;">
+          <button id="cehConfirmCancel" class="btn btn-outline-secondary btn-sm" style="padding:8px 16px;">Cancel</button>
+          <button id="cehConfirmOk" class="btn ${confirmClass} btn-sm" style="padding:8px 18px; font-weight:700;">${confirmText}</button>
+        </div>
+      </div>
+      <style>
+        @keyframes modalPop {
+          from { opacity: 0; transform: scale(0.95); }
+          to { opacity: 1; transform: scale(1); }
+        }
+      </style>
+    `;
+
+    modal.style.display = 'flex';
+
+    const close = () => { modal.style.display = 'none'; };
+    modal.querySelector('#cehConfirmClose').onclick = close;
+    modal.querySelector('#cehConfirmCancel').onclick = close;
+    modal.querySelector('#cehConfirmOk').onclick = () => {
+      close();
+      if (typeof onConfirm === 'function') onConfirm();
+    };
+  }
 }
 
-// Auto init on script load
+// Auto-initialize on script load
 MockDB.init();

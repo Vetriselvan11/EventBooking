@@ -150,12 +150,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    const events = MockDB.getEvents();
+    const allEvents = MockDB.getEvents();
+    const coordEvents = allEvents.filter(ev => 
+        (currentUser && currentUser.email && ev.coordinator_email && ev.coordinator_email.toLowerCase() === currentUser.email.toLowerCase()) ||
+        (currentUser && currentUser.name && ev.coordinator_name && ev.coordinator_name.toLowerCase() === currentUser.name.toLowerCase()) ||
+        (currentUser && currentUser.role === 'admin')
+    );
+    const events = coordEvents.length > 0 ? coordEvents : allEvents;
     const tbody = document.getElementById('coordEventsTable');
 
-    tbody.innerHTML = events.slice(0, 3).map(ev => {
+    tbody.innerHTML = events.map(ev => {
         const booked = ev.max_capacity - ev.available_seats;
-        const pct = Math.round((booked / ev.max_capacity) * 100);
+        const pct = Math.min(100, Math.round((booked / ev.max_capacity) * 100));
         const price = ev.ticket_price === 0 ? 'Free' : '$' + ev.ticket_price.toFixed(2);
         return `
             <tr>
@@ -172,7 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 </td>
                 <td class="td-price" style="font-weight:700;">${price}</td>
-                <td><span class="badge badge-success">Open</span></td>
+                <td><span class="badge ${ev.status === 'open' ? 'badge-success' : 'badge-danger'}">${ev.status.toUpperCase()}</span></td>
                 <td style="text-align:right;">
                     <a href="verify-ticket.html" class="btn btn-outline-primary btn-sm">
                         Scanner

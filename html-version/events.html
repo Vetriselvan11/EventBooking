@@ -122,9 +122,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const q = searchInput.value.toLowerCase().trim();
         const cat = catSelect.value;
         const price = priceSelect.value;
+        const currentEvents = MockDB.getEvents();
 
-        const filtered = events.filter(ev => {
-            const matchesQ = !q || ev.title.toLowerCase().includes(q) || ev.venue.toLowerCase().includes(q) || ev.short_description.toLowerCase().includes(q);
+        const filtered = currentEvents.filter(ev => {
+            const matchesQ = !q || ev.title.toLowerCase().includes(q) || ev.venue.toLowerCase().includes(q) || (ev.short_description && ev.short_description.toLowerCase().includes(q));
             const matchesCat = cat === 'all' || ev.category_id == cat;
             const matchesPrice = price === 'all' || (price === 'free' && ev.ticket_price === 0) || (price === 'paid' && ev.ticket_price > 0);
             return matchesQ && matchesCat && matchesPrice;
