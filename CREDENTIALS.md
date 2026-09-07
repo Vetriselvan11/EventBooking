@@ -6,8 +6,9 @@ This file contains the pre-configured credentials for all user roles across the 
 
 ## 1. System Administrator
 - **Role**: Admin (Full platform management, analytics, user & coordinator management, revenue audits)
-- **Email / ID**: `admin@campus.edu`
-- **Password**: `Admin@123`
+- **Default Email / ID**: `admin@campus.edu`
+- **Default Password**: `Admin@123`
+- **Self-Service Profile Customization**: The administrator can customize their **Display Name**, **Email / Username**, **Title**, and **Password** directly from the **"⚙️ Admin Profile & Settings"** tab or via the **"✏️ Edit Profile"** button in the sidebar.
 - **Direct Dashboard URL**:
   - HTML Version: `html-version/admin-dashboard.html`
   - PHP Version: `admin/dashboard.php`

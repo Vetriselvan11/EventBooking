@@ -642,6 +642,17 @@ class MockDB {
     localStorage.setItem('ceh_user', JSON.stringify(user));
   }
 
+  static updateCurrentUser(data) {
+    const user = this.getCurrentUser();
+    if (!user) throw new Error('No active user session');
+    const updated = {
+      ...user,
+      ...data
+    };
+    this.setCurrentUser(updated);
+    return updated;
+  }
+
   static logout() {
     localStorage.removeItem('ceh_user');
     window.location.href = 'login.html';

@@ -132,6 +132,23 @@
             flex: 1;
             flex-wrap: wrap;
         }
+        .user-edit-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: underline;
+            padding: 0;
+            margin-top: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .user-edit-btn:hover {
+            color: var(--primary-hover);
+        }
     </style>
 </head>
 <body>
@@ -161,11 +178,16 @@
 <div class="dashboard-layout">
     <aside class="dashboard-sidebar">
         <div class="sidebar-brand-badge">
-            <div class="sidebar-role-tag role-tag-admin">ADMIN CONSOLE</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <div class="sidebar-role-tag role-tag-admin" style="margin-bottom:0;">ADMIN CONSOLE</div>
+                <button onclick="openProfileModal()" class="user-edit-btn" title="Edit Admin Profile">
+                    ✏️ Edit
+                </button>
+            </div>
             <div class="sidebar-user-summary">
                 <span class="user-greeting">Logged in as</span>
                 <span class="user-name-full" id="adminUserName">Dr. Arthur Pendelton</span>
-                <span class="user-dept-sub">System Administrator</span>
+                <span class="user-dept-sub" id="adminUserRoleSub">System Administrator</span>
             </div>
         </div>
         <nav class="sidebar-nav">
@@ -177,11 +199,13 @@
                 <li><a href="javascript:void(0)" onclick="switchTab('categories')" id="sbTabCategories" class="sidebar-link"><span class="sb-text">📁 Academic Categories</span></a></li>
                 <li><a href="javascript:void(0)" onclick="switchTab('students')" id="sbTabStudents" class="sidebar-link"><span class="sb-text">🎓 Students Registry</span></a></li>
                 <li><a href="javascript:void(0)" onclick="switchTab('bookings')" id="sbTabBookings" class="sidebar-link"><span class="sb-text">💳 Bookings & Payments</span></a></li>
+                <li><a href="javascript:void(0)" onclick="switchTab('settings')" id="sbTabSettings" class="sidebar-link"><span class="sb-text">⚙️ Admin Profile & ID</span></a></li>
             </ul>
             <div class="nav-section-label" style="margin-top:16px;">Quick Actions</div>
             <ul class="sidebar-menu">
                 <li><a href="javascript:void(0)" onclick="openCreateEventModal()" class="sidebar-link" style="color:var(--primary); font-weight:700;"><span class="sb-text">+ Create New Event</span></a></li>
                 <li><a href="javascript:void(0)" onclick="openAddCategoryModal()" class="sidebar-link"><span class="sb-text">+ Add Category</span></a></li>
+                <li><a href="javascript:void(0)" onclick="openProfileModal()" class="sidebar-link"><span class="sb-text">👤 Change Name / ID</span></a></li>
                 <li><a href="verify-ticket.html" class="sidebar-link"><span class="sb-text">📲 Gate Pass Scanner</span></a></li>
                 <li><a href="events.html" class="sidebar-link"><span class="sb-text">🔍 Public Catalog</span></a></li>
             </ul>
@@ -197,9 +221,12 @@
         <div class="dashboard-page-header">
             <div class="dashboard-header-title">
                 <h1>Platform Administration Dashboard</h1>
-                <p>Welcome, Dr. Arthur Pendelton. Full live control to add, edit, toggle, and delete events, coordinators, and categories.</p>
+                <p>Welcome, <strong id="adminHeaderWelcome">Dr. Arthur Pendelton</strong>. Full live control to add, edit, and delete events, coordinators, and categories.</p>
             </div>
             <div class="dashboard-header-actions">
+                <button onclick="openProfileModal()" class="btn btn-outline-secondary" style="padding:10px 16px; font-weight:600;">
+                    👤 My Profile
+                </button>
                 <button onclick="openCreateEventModal()" class="btn btn-primary" style="box-shadow:var(--shadow-sm); padding:10px 18px; font-weight:700;">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:6px;"><path d="M12 4.5v15m7.5-7.5h-15"/></svg>
                     Create New Event
@@ -227,6 +254,9 @@
             <button class="admin-tab-btn" id="tabBtnBookings" onclick="switchTab('bookings')">
                 💳 Bookings Audit (<span id="tabCountBookings">0</span>)
             </button>
+            <button class="admin-tab-btn" id="tabBtnSettings" onclick="switchTab('settings')">
+                ⚙️ Admin Profile & Settings
+            </button>
         </div>
 
         <!-- ==================== TAB 1: OVERVIEW ==================== -->
@@ -246,6 +276,9 @@
                     </button>
                     <button onclick="openAddCategoryModal()" class="quick-action-pill">
                         📁 Add Category
+                    </button>
+                    <button onclick="openProfileModal()" class="quick-action-pill">
+                        ⚙️ Change Admin Name
                     </button>
                     <a href="verify-ticket.html" class="quick-action-pill">
                         📲 Pass Scanner
@@ -365,7 +398,6 @@
                     <input type="text" id="eventSearchInput" class="form-control" placeholder="🔍 Search events by title or venue..." style="max-width:280px;" oninput="filterEventsTable()">
                     <select id="eventCatFilter" class="form-select" style="max-width:200px;" onchange="filterEventsTable()">
                         <option value="">All Categories</option>
-                        <!-- Populated -->
                     </select>
                     <select id="eventStatusFilter" class="form-select" style="max-width:160px;" onchange="filterEventsTable()">
                         <option value="">All Statuses</option>
@@ -543,7 +575,116 @@
             </div>
         </div>
 
+        <!-- ==================== TAB 7: ADMIN PROFILE & SETTINGS ==================== -->
+        <div class="tab-content-panel" id="panel-settings">
+            <div class="dashboard-grid-split" style="grid-template-columns: 1.2fr 0.8fr;">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">👤 Administrator Profile & Credentials</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="adminSettingsForm">
+                            <div class="form-group">
+                                <label class="form-label form-label-required">Admin Display Name</label>
+                                <input type="text" id="settingsAdminName" class="form-control" placeholder="Enter your full name" required>
+                                <small style="color:var(--text-muted); font-size:0.75rem;">This name will appear on the dashboard, event approvals, and audit logs.</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label form-label-required">Admin Institutional Email / Username</label>
+                                <input type="email" id="settingsAdminEmail" class="form-control" placeholder="admin@campus.edu" required>
+                                <small style="color:var(--text-muted); font-size:0.75rem;">Used as your administrative login identifier.</small>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Administrative Title</label>
+                                    <input type="text" id="settingsAdminTitle" class="form-control" placeholder="e.g. Chief Systems Administrator & Event Director">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Direct Contact Phone</label>
+                                    <input type="text" id="settingsAdminPhone" class="form-control" placeholder="+1 (555) 019-2831">
+                                </div>
+                            </div>
+
+                            <div style="border-top:1px solid #e2e8f0; padding-top:16px; margin-top:8px; display:flex; justify-content:flex-end;">
+                                <button type="submit" class="btn btn-primary" style="font-weight:700; padding:10px 24px;">
+                                    Save Profile Changes &rarr;
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">🔒 Security & Password</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="adminPasswordForm">
+                            <div class="form-group">
+                                <label class="form-label">New Password</label>
+                                <input type="password" id="newAdminPassword" class="form-control" placeholder="••••••••">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Confirm New Password</label>
+                                <input type="password" id="confirmAdminPassword" class="form-control" placeholder="••••••••">
+                            </div>
+                            <button type="submit" class="btn btn-outline-primary btn-block" style="padding:10px; font-weight:700;">
+                                Update Password
+                            </button>
+                        </form>
+
+                        <div style="margin-top:24px; padding:16px; background:#f8fafc; border-radius:8px; border:1px solid #e2e8f0; font-size:0.82rem; color:#475569;">
+                            <div style="font-weight:700; color:#0f172a; margin-bottom:4px;">🛡️ Role Permissions</div>
+                            <div>• Role: <strong>SUPER_ADMIN</strong></div>
+                            <div>• Full Event Creation & Delete Rights</div>
+                            <div>• Coordinator Access Grant & Revoke Rights</div>
+                            <div>• Global Revenue & Booking Oversight</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </main>
+</div>
+
+<!-- ==================== MODAL: EDIT ADMIN PROFILE ==================== -->
+<div class="modal-backdrop" id="adminProfileModal">
+    <div class="modal-box">
+        <div style="padding:18px 24px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; background:#f8fafc;">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:1.2rem;">👤</span>
+                <h3 style="font-size:1.15rem; font-weight:800; color:var(--text-primary); margin:0;">
+                    Update Administrator Profile
+                </h3>
+            </div>
+            <button onclick="closeProfileModal()" style="border:none; background:none; font-size:1.4rem; cursor:pointer; color:#64748b;">&times;</button>
+        </div>
+        
+        <form id="quickProfileModalForm" style="padding:24px;">
+            <div class="form-group">
+                <label class="form-label form-label-required">Admin Full Name</label>
+                <input type="text" id="modalAdminName" class="form-control" placeholder="e.g. Dr. Arthur Pendelton" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label form-label-required">Admin Email / Username</label>
+                <input type="email" id="modalAdminEmail" class="form-control" placeholder="admin@campus.edu" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Administrative Title</label>
+                <input type="text" id="modalAdminTitle" class="form-control" placeholder="e.g. System Administrator">
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:10px; border-top:1px solid #e2e8f0; padding-top:16px; margin-top:8px;">
+                <button type="button" onclick="closeProfileModal()" class="btn btn-outline-secondary btn-sm">Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm" style="font-weight:700; padding:8px 20px;">Save Profile &rarr;</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <!-- ==================== MODAL: CREATE NEW EVENT ==================== -->
@@ -568,15 +709,11 @@
             <div class="form-row">
                 <div class="form-group">
                     <label class="form-label form-label-required">Academic Category</label>
-                    <select id="evCategory" class="form-select" required>
-                        <!-- Populated dynamically -->
-                    </select>
+                    <select id="evCategory" class="form-select" required></select>
                 </div>
                 <div class="form-group">
                     <label class="form-label form-label-required">Assign Faculty Coordinator</label>
-                    <select id="evCoordinator" class="form-select" required>
-                        <!-- Populated dynamically -->
-                    </select>
+                    <select id="evCoordinator" class="form-select" required></select>
                 </div>
             </div>
 
@@ -845,12 +982,7 @@ MockDB.requireRole(['admin']);
 
 document.addEventListener('DOMContentLoaded', () => {
     MockDB.renderHeaderNav('admin');
-
-    const currentUser = MockDB.getCurrentUser();
-    if (currentUser) {
-        document.getElementById('adminUserName').textContent = currentUser.name;
-    }
-
+    syncAdminProfileUI();
     populateEventModalDropdowns();
     renderAll();
 
@@ -993,7 +1125,98 @@ document.addEventListener('DOMContentLoaded', () => {
             MockDB.toast(err.message, 'error');
         }
     });
+
+    // Admin Settings Page Form Handler
+    document.getElementById('adminSettingsForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('settingsAdminName').value.trim();
+        const email = document.getElementById('settingsAdminEmail').value.trim();
+        const title = document.getElementById('settingsAdminTitle').value.trim();
+        const phone = document.getElementById('settingsAdminPhone').value.trim();
+
+        try {
+            MockDB.updateCurrentUser({ name, email, title, phone });
+            syncAdminProfileUI();
+            MockDB.renderHeaderNav('admin');
+            MockDB.toast(`Admin profile updated! Logged in as ${name}`, 'success');
+        } catch (err) {
+            MockDB.toast(err.message, 'error');
+        }
+    });
+
+    // Admin Quick Modal Form Handler
+    document.getElementById('quickProfileModalForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('modalAdminName').value.trim();
+        const email = document.getElementById('modalAdminEmail').value.trim();
+        const title = document.getElementById('modalAdminTitle').value.trim();
+
+        try {
+            MockDB.updateCurrentUser({ name, email, title });
+            syncAdminProfileUI();
+            MockDB.renderHeaderNav('admin');
+            closeProfileModal();
+            MockDB.toast(`Admin credentials updated: ${name} (${email})`, 'success');
+        } catch (err) {
+            MockDB.toast(err.message, 'error');
+        }
+    });
+
+    // Admin Password Update Handler
+    document.getElementById('adminPasswordForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const newPass = document.getElementById('newAdminPassword').value;
+        const confirmPass = document.getElementById('confirmAdminPassword').value;
+
+        if (!newPass) {
+            MockDB.toast('Please enter a new password.', 'warning');
+            return;
+        }
+        if (newPass !== confirmPass) {
+            MockDB.toast('Passwords do not match. Please re-enter.', 'error');
+            return;
+        }
+
+        MockDB.updateCurrentUser({ password: newPass });
+        document.getElementById('adminPasswordForm').reset();
+        MockDB.toast('Admin password changed successfully!', 'success');
+    });
 });
+
+function syncAdminProfileUI() {
+    const user = MockDB.getCurrentUser();
+    if (!user) return;
+
+    const name = user.name || 'Dr. Arthur Pendelton';
+    const email = user.email || 'admin@campus.edu';
+    const title = user.title || 'System Administrator';
+    const phone = user.phone || '+1 (555) 019-2831';
+
+    // Update UI elements
+    document.getElementById('adminUserName').textContent = name;
+    document.getElementById('adminUserRoleSub').textContent = title;
+    document.getElementById('adminHeaderWelcome').textContent = name;
+
+    // Pre-populate Settings Tab form
+    document.getElementById('settingsAdminName').value = name;
+    document.getElementById('settingsAdminEmail').value = email;
+    document.getElementById('settingsAdminTitle').value = title;
+    document.getElementById('settingsAdminPhone').value = phone;
+
+    // Pre-populate Modal form
+    document.getElementById('modalAdminName').value = name;
+    document.getElementById('modalAdminEmail').value = email;
+    document.getElementById('modalAdminTitle').value = title;
+}
+
+function openProfileModal() {
+    syncAdminProfileUI();
+    document.getElementById('adminProfileModal').classList.add('open');
+}
+
+function closeProfileModal() {
+    document.getElementById('adminProfileModal').classList.remove('open');
+}
 
 function switchTab(tabId) {
     document.querySelectorAll('.admin-tab-btn').forEach(btn => btn.classList.remove('active'));
