@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coordinator Console — CampusEvent Hub</title>
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/dashboard.css">
+</head>
+<body>
+
+<header class="site-header">
+    <div class="header-inner">
+        <a href="index.html" class="brand-link">
+            <div class="brand-logo-mark">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z"/></svg>
+            </div>
+            <div class="brand-text">
+                <span class="brand-name">CampusEvent Hub</span>
+                <span class="brand-badge">Academic & Enterprise</span>
+            </div>
+        </a>
+        <nav class="main-nav">
+            <ul class="nav-list">
+                <!-- Populated dynamically -->
+            </ul>
+        </nav>
+        <div class="header-actions">
+            <!-- Populated dynamically -->
+        </div>
+    </div>
+</header>
+
+<div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-brand-badge">
+            <div class="sidebar-role-tag role-tag-coordinator">COORDINATOR DESK</div>
+            <div class="sidebar-user-summary">
+                <span class="user-greeting">Logged in as</span>
+                <span class="user-name-full" id="coordUserGreeting">Prof. Elena Rostova</span>
+                <span class="user-dept-sub" id="coordUserDept">Faculty Event Coordinator</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <ul class="sidebar-menu">
+                <li><a href="coordinator-dashboard.html" class="sidebar-link active"><span class="sb-text">Overview</span></a></li>
+                <li><a href="verify-ticket.html" class="sidebar-link"><span class="sb-text">Check-In Terminal</span></a></li>
+                <li><a href="events.html" class="sidebar-link"><span class="sb-text">Browse Events</span></a></li>
+            </ul>
+            <div class="nav-section-label" style="margin-top:20px;">Session</div>
+            <ul class="sidebar-menu">
+                <li><a href="javascript:void(0)" onclick="MockDB.logout()" class="sidebar-link" style="color:#ef4444;"><span class="sb-text">Sign Out</span></a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="dashboard-workspace">
+        <div class="dashboard-page-header">
+            <div class="dashboard-header-title">
+                <h1>Coordinator Event Console</h1>
+                <p>Welcome, <strong id="coordHeaderTitle">Prof. Elena Rostova</strong> (Event Chair & Lead Faculty)</p>
+            </div>
+            <div class="dashboard-header-actions">
+                <a href="verify-ticket.html" class="btn btn-primary btn-sm">Open Scanner Terminal &rarr;</a>
+            </div>
+        </div>
+
+        <div style="background:#eff6ff; border:1px solid #bfdbfe; border-left:4px solid #3b82f6; padding:12px 16px; border-radius:6px; margin-bottom:20px; font-size:0.86rem; color:#1e40af;">
+            <strong>Authorized Coordinator Desk:</strong> Your account has been provisioned and granted access by the System Administrator. Standard students and unauthenticated users cannot access this console.
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-info">
+                    <span class="metric-label">Assigned Events</span>
+                    <span class="metric-value num-tabular">3</span>
+                    <span class="metric-sub">Active department symposiums</span>
+                </div>
+                <div class="metric-icon-box metric-icon-blue">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-info">
+                    <span class="metric-label">Registered Attendees</span>
+                    <span class="metric-value num-tabular">26</span>
+                    <span class="metric-sub">Across managed events</span>
+                </div>
+                <div class="metric-icon-box metric-icon-green">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-info">
+                    <span class="metric-label">Check-in Completion</span>
+                    <span class="metric-value num-tabular">88%</span>
+                    <span class="metric-sub">Admitted show rate</span>
+                </div>
+                <div class="metric-icon-box metric-icon-purple">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Managed Events & Capacity Ratios</h3>
+            </div>
+            <div class="card-body" style="padding:0;">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Event Title</th>
+                                <th>Schedule</th>
+                                <th>Venue</th>
+                                <th>Capacity Utilization</th>
+                                <th>Ticket Price</th>
+                                <th>Status</th>
+                                <th style="text-align:right;">Scanner</th>
+                            </tr>
+                        </thead>
+                        <tbody id="coordEventsTable">
+                            <!-- Populated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<script src="assets/js/mock-db.js"></script>
+<script>
+// 1. Strict RBAC Enforcement — Allow only 'coordinator' or 'admin'
+MockDB.requireRole(['coordinator', 'admin']);
+
+document.addEventListener('DOMContentLoaded', () => {
+    MockDB.renderHeaderNav('coordinator');
+
+    const currentUser = MockDB.getCurrentUser();
+    if (currentUser) {
+        document.getElementById('coordUserGreeting').textContent = currentUser.name;
+        document.getElementById('coordHeaderTitle').textContent = currentUser.name;
+        if (currentUser.department) {
+            document.getElementById('coordUserDept').textContent = currentUser.department;
+        }
+    }
+
+    const events = MockDB.getEvents();
+    const tbody = document.getElementById('coordEventsTable');
+
+    tbody.innerHTML = events.slice(0, 3).map(ev => {
+        const booked = ev.max_capacity - ev.available_seats;
+        const pct = Math.round((booked / ev.max_capacity) * 100);
+        const price = ev.ticket_price === 0 ? 'Free' : '$' + ev.ticket_price.toFixed(2);
+        return `
+            <tr>
+                <td><strong><a href="event-details.html?id=${ev.id}">${ev.title}</a></strong></td>
+                <td>${ev.event_date} · ${ev.start_time}</td>
+                <td>${ev.venue}</td>
+                <td style="min-width:180px;">
+                    <div class="capacity-labels" style="margin-bottom:4px;">
+                        <span><strong>${booked}</strong> / ${ev.max_capacity} seats</span>
+                        <span>${pct}%</span>
+                    </div>
+                    <div class="capacity-progress">
+                        <div class="capacity-fill" style="width:${pct}%;"></div>
+                    </div>
+                </td>
+                <td class="td-price" style="font-weight:700;">${price}</td>
+                <td><span class="badge badge-success">Open</span></td>
+                <td style="text-align:right;">
+                    <a href="verify-ticket.html" class="btn btn-outline-primary btn-sm">
+                        Scanner
+                    </a>
+                </td>
+            </tr>
+        `;
+    }).join('');
+});
+</script>
+</body>
+</html>

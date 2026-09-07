@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Portal — CampusEvent Hub</title>
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/dashboard.css">
+</head>
+<body>
+
+<header class="site-header">
+    <div class="header-inner">
+        <a href="index.html" class="brand-link">
+            <div class="brand-logo-mark">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z"/></svg>
+            </div>
+            <div class="brand-text">
+                <span class="brand-name">CampusEvent Hub</span>
+                <span class="brand-badge">Academic & Enterprise</span>
+            </div>
+        </a>
+        <nav class="main-nav">
+            <ul class="nav-list">
+                <!-- Dynamically populated by MockDB -->
+            </ul>
+        </nav>
+        <div class="header-actions">
+            <!-- Dynamically populated by MockDB -->
+        </div>
+    </div>
+</header>
+
+<div class="dashboard-layout">
+    
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-brand-badge">
+            <div class="sidebar-role-tag role-tag-student">STUDENT CONSOLE</div>
+            <div class="sidebar-user-summary">
+                <span class="user-greeting">Logged in as</span>
+                <span class="user-name-full" id="sidebarUserName">Alexander Wright</span>
+                <span class="user-dept-sub" id="sidebarUserDept">Computer Science & Engineering</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Portal</div>
+            <ul class="sidebar-menu">
+                <li><a href="student-dashboard.html" class="sidebar-link active"><span class="sb-text">Dashboard</span></a></li>
+                <li><a href="events.html" class="sidebar-link"><span class="sb-text">Browse Events</span></a></li>
+                <li><a href="verify-ticket.html" class="sidebar-link"><span class="sb-text">Ticket Scanner</span></a></li>
+            </ul>
+            <div class="nav-section-label" style="margin-top:20px;">Session</div>
+            <ul class="sidebar-menu">
+                <li><a href="javascript:void(0)" onclick="MockDB.logout()" class="sidebar-link" style="color:#ef4444;"><span class="sb-text">Sign Out</span></a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="dashboard-workspace">
+        <div class="dashboard-page-header">
+            <div class="dashboard-header-title">
+                <h1>Student Portal Dashboard</h1>
+                <p id="welcomeGreeting">Welcome back, Alexander Wright</p>
+            </div>
+            <div class="dashboard-header-actions">
+                <a href="events.html" class="btn btn-primary btn-sm">Explore More Events &rarr;</a>
+            </div>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-info">
+                    <span class="metric-label">Active Passes</span>
+                    <span class="metric-value num-tabular" id="activePassCount">3</span>
+                    <span class="metric-sub">Issued entry passes</span>
+                </div>
+                <div class="metric-icon-box metric-icon-blue">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z"/></svg>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-info">
+                    <span class="metric-label">Total Bookings</span>
+                    <span class="metric-value num-tabular" id="totalBookingsCount">2</span>
+                    <span class="metric-sub">Confirmed registrations</span>
+                </div>
+                <div class="metric-icon-box metric-icon-green">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-info">
+                    <span class="metric-label">Total Investment</span>
+                    <span class="metric-value num-tabular" id="totalSpent">$50.00</span>
+                    <span class="metric-sub">Registration fees</span>
+                </div>
+                <div class="metric-icon-box metric-icon-amber">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom:28px;">
+            <div class="card-header">
+                <h3 class="card-title">My Registered Events & Active Passes</h3>
+            </div>
+            <div class="card-body" style="padding:0;">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Booking Ref</th>
+                                <th>Event Title</th>
+                                <th>Date & Time</th>
+                                <th>Venue</th>
+                                <th>Passes</th>
+                                <th>Status</th>
+                                <th style="text-align:right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentBookingsTable">
+                            <!-- Populated -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<script src="assets/js/mock-db.js"></script>
+<script>
+// RBAC Check — Must be logged in as student or admin
+MockDB.requireRole(['student', 'admin']);
+
+document.addEventListener('DOMContentLoaded', () => {
+    MockDB.renderHeaderNav('student');
+
+    const user = MockDB.getCurrentUser();
+    const bookings = MockDB.getBookings();
+
+    if (user) {
+        document.getElementById('sidebarUserName').textContent = user.name;
+        document.getElementById('sidebarUserDept').textContent = user.department || 'Campus';
+        document.getElementById('welcomeGreeting').textContent = `Welcome back, ${user.name} (${user.student_id || 'STU-2024-8841'})`;
+    }
+
+    let passCount = 0;
+    let totalSpend = 0;
+    bookings.forEach(b => {
+        if (b.status === 'confirmed') {
+            passCount += b.attendees.length;
+            totalSpend += b.total_amount;
+        }
+    });
+
+    document.getElementById('activePassCount').textContent = passCount;
+    document.getElementById('totalBookingsCount').textContent = bookings.length;
+    document.getElementById('totalSpent').textContent = '$' + totalSpend.toFixed(2);
+
+    const tbody = document.getElementById('studentBookingsTable');
+    tbody.innerHTML = bookings.map(b => `
+        <tr>
+            <td><code style="font-weight:700; color:var(--primary-900);">${b.booking_reference}</code></td>
+            <td><strong>${b.event_title}</strong></td>
+            <td>${b.event_date} · ${b.event_time || '09:00 AM'}</td>
+            <td>${b.venue}</td>
+            <td><span class="badge badge-neutral">${b.quantity} Ticket(s)</span></td>
+            <td>
+                <span class="badge ${b.status === 'confirmed' ? 'badge-success' : 'badge-danger'}">
+                    ${b.status === 'confirmed' ? 'Confirmed' : 'Cancelled'}
+                </span>
+            </td>
+            <td style="text-align:right;">
+                <a href="confirmation.html?ref=${b.booking_reference}" class="btn btn-outline-primary btn-sm">
+                    View Passes
+                </a>
+            </td>
+        </tr>
+    `).join('');
+});
+</script>
+</body>
+</html>

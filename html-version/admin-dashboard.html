@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrator Console — CampusEvent Hub</title>
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/dashboard.css">
+    <style>
+        .admin-nav-tabs {
+            display: flex;
+            gap: 8px;
+            background: #f1f5f9;
+            padding: 6px;
+            border-radius: var(--radius-md);
+            margin-bottom: 24px;
+            overflow-x: auto;
+            border: 1px solid var(--border-subtle);
+        }
+        .admin-tab-btn {
+            background: none;
+            border: none;
+            padding: 10px 18px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #64748b;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+        .admin-tab-btn:hover {
+            color: var(--primary-900);
+            background: rgba(255, 255, 255, 0.6);
+        }
+        .admin-tab-btn.active {
+            background: #ffffff;
+            color: var(--primary-900);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            font-weight: 700;
+        }
+        .tab-content-panel {
+            display: none;
+            animation: fadeIn 0.2s ease-in-out;
+        }
+        .tab-content-panel.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-backdrop.open {
+            display: flex;
+        }
+        .modal-box {
+            background: #ffffff;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3);
+            border: 1px solid #e2e8f0;
+        }
+        .badge-suspended {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        .badge-active {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+        .quick-action-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            color: #334155;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.15s ease;
+            cursor: pointer;
+        }
+        .quick-action-pill:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: #eff6ff;
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+
+<header class="site-header">
+    <div class="header-inner">
+        <a href="index.html" class="brand-link">
+            <div class="brand-logo-mark">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z"/></svg>
+            </div>
+            <div class="brand-text">
+                <span class="brand-name">CampusEvent Hub</span>
+                <span class="brand-badge">Academic & Enterprise</span>
+            </div>
+        </a>
+        <nav class="main-nav">
+            <ul class="nav-list">
+                <!-- Populated dynamically -->
+            </ul>
+        </nav>
+        <div class="header-actions">
+            <!-- Populated dynamically -->
+        </div>
+    </div>
+</header>
+
+<div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-brand-badge">
+            <div class="sidebar-role-tag role-tag-admin">ADMIN CONSOLE</div>
+            <div class="sidebar-user-summary">
+                <span class="user-greeting">Logged in as</span>
+                <span class="user-name-full" id="adminUserName">Dr. Arthur Pendelton</span>
+                <span class="user-dept-sub">System Administrator</span>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Main Navigation</div>
+            <ul class="sidebar-menu">
+                <li><a href="javascript:void(0)" onclick="switchTab('overview')" id="sbTabOverview" class="sidebar-link active"><span class="sb-text">📊 Dashboard Overview</span></a></li>
+                <li><a href="javascript:void(0)" onclick="switchTab('events')" id="sbTabEvents" class="sidebar-link"><span class="sb-text">🗓️ Manage Events</span></a></li>
+                <li><a href="javascript:void(0)" onclick="switchTab('coordinators')" id="sbTabCoords" class="sidebar-link"><span class="sb-text">👥 Coordinator Access</span></a></li>
+                <li><a href="javascript:void(0)" onclick="switchTab('students')" id="sbTabStudents" class="sidebar-link"><span class="sb-text">🎓 Students Registry</span></a></li>
+                <li><a href="javascript:void(0)" onclick="switchTab('bookings')" id="sbTabBookings" class="sidebar-link"><span class="sb-text">💳 Bookings & Payments</span></a></li>
+            </ul>
+            <div class="nav-section-label" style="margin-top:16px;">Quick Actions</div>
+            <ul class="sidebar-menu">
+                <li><a href="javascript:void(0)" onclick="openCreateEventModal()" class="sidebar-link" style="color:var(--primary); font-weight:700;"><span class="sb-text">+ Create New Event</span></a></li>
+                <li><a href="verify-ticket.html" class="sidebar-link"><span class="sb-text">📲 Gate Pass Scanner</span></a></li>
+                <li><a href="events.html" class="sidebar-link"><span class="sb-text">🔍 Public Catalog</span></a></li>
+            </ul>
+            <div class="nav-section-label" style="margin-top:16px;">Session</div>
+            <ul class="sidebar-menu">
+                <li><a href="javascript:void(0)" onclick="MockDB.logout()" class="sidebar-link" style="color:#ef4444;"><span class="sb-text">🚪 Sign Out</span></a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="dashboard-workspace">
+        <div class="dashboard-page-header">
+            <div class="dashboard-header-title">
+                <h1>Platform Administration Dashboard</h1>
+                <p>Welcome, Dr. Arthur Pendelton. Manage events, assign faculty coordinators, and monitor registrations.</p>
+            </div>
+            <div class="dashboard-header-actions">
+                <button onclick="openCreateEventModal()" class="btn btn-primary" style="box-shadow:var(--shadow-sm); padding:10px 18px; font-weight:700;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:6px;"><path d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                    Create New Event
+                </button>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="admin-nav-tabs">
+            <button class="admin-tab-btn active" id="tabBtnOverview" onclick="switchTab('overview')">
+                📊 Overview & KPIs
+            </button>
+            <button class="admin-tab-btn" id="tabBtnEvents" onclick="switchTab('events')">
+                🗓️ Events Directory (<span id="tabCountEvents">0</span>)
+            </button>
+            <button class="admin-tab-btn" id="tabBtnCoordinators" onclick="switchTab('coordinators')">
+                👥 Faculty Coordinators (<span id="tabCountCoords">0</span>)
+            </button>
+            <button class="admin-tab-btn" id="tabBtnStudents" onclick="switchTab('students')">
+                🎓 Students Registry (<span id="tabCountStudents">0</span>)
+            </button>
+            <button class="admin-tab-btn" id="tabBtnBookings" onclick="switchTab('bookings')">
+                💳 Bookings Audit (<span id="tabCountBookings">0</span>)
+            </button>
+        </div>
+
+        <!-- ==================== TAB 1: OVERVIEW ==================== -->
+        <div class="tab-content-panel active" id="panel-overview">
+            
+            <!-- Quick Actions Ribbon -->
+            <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:8px; padding:14px 18px; margin-bottom:24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+                <div style="font-size:0.88rem; font-weight:700; color:#334155;">
+                    ⚡ Quick Admin Tools:
+                </div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <button onclick="openCreateEventModal()" class="quick-action-pill" style="background:#eff6ff; color:#1e40af; border-color:#bfdbfe;">
+                        ➕ Create New Event
+                    </button>
+                    <button onclick="openAddCoordModal()" class="quick-action-pill">
+                        👤 Grant Faculty Coordinator
+                    </button>
+                    <a href="verify-ticket.html" class="quick-action-pill">
+                        📲 Gate Entrance Scanner
+                    </a>
+                    <a href="events.html" target="_blank" class="quick-action-pill">
+                        🌐 View Live Catalog
+                    </a>
+                </div>
+            </div>
+
+            <!-- KPI Metric Cards -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-info">
+                        <span class="metric-label">Total Volume</span>
+                        <span class="metric-value num-tabular" id="metricTotalRev">$75.00</span>
+                        <span class="metric-sub">Settled pass transactions</span>
+                    </div>
+                    <div class="metric-icon-box metric-icon-green">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-info">
+                        <span class="metric-label">Published Events</span>
+                        <span class="metric-value num-tabular" id="metricTotalEvents">5</span>
+                        <span class="metric-sub">Active symposiums</span>
+                    </div>
+                    <div class="metric-icon-box metric-icon-blue">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-info">
+                        <span class="metric-label">Total Bookings</span>
+                        <span class="metric-value num-tabular" id="metricTotalBookings">2</span>
+                        <span class="metric-sub">Issued ticket orders</span>
+                    </div>
+                    <div class="metric-icon-box metric-icon-purple">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z"/></svg>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-info">
+                        <span class="metric-label">Faculty Coordinators</span>
+                        <span class="metric-value num-tabular" id="metricTotalCoords">2</span>
+                        <span class="metric-sub">Assigned event chairs</span>
+                    </div>
+                    <div class="metric-icon-box metric-icon-amber">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Split -->
+            <div class="dashboard-grid-split">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Booking Velocity (Last 7 Days)</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="adminBarChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Events by Academic Discipline</h3>
+                    </div>
+                    <div class="card-body" style="display:flex; justify-content:center; align-items:center;">
+                        <div class="chart-container" style="display:flex; justify-content:center; align-items:center;">
+                            <canvas id="adminDonutChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity Table -->
+            <div class="card">
+                <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3 class="card-title">Recent Event Registrations</h3>
+                    <button onclick="switchTab('bookings')" class="btn btn-outline-primary btn-sm">View All Bookings &rarr;</button>
+                </div>
+                <div class="card-body" style="padding:0;">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Booking Ref</th>
+                                    <th>Student</th>
+                                    <th>Event Title</th>
+                                    <th>Tickets</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Booked Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="overviewBookingsTable">
+                                <!-- Populated -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 2: EVENTS MANAGEMENT ==================== -->
+        <div class="tab-content-panel" id="panel-events">
+            <div class="card">
+                <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                    <div>
+                        <h3 class="card-title" style="margin:0 0 4px 0;">All Campus Events Directory</h3>
+                        <p style="font-size:0.85rem; color:var(--text-muted); margin:0;">Create, edit, toggle status, and monitor seat capacities for all events.</p>
+                    </div>
+                    <button onclick="openCreateEventModal()" class="btn btn-primary btn-sm">
+                        + Create New Event
+                    </button>
+                </div>
+                <div class="card-body" style="padding:0;">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Event Details</th>
+                                    <th>Coordinator</th>
+                                    <th>Date & Schedule</th>
+                                    <th>Venue</th>
+                                    <th>Capacity Ratio</th>
+                                    <th>Price</th>
+                                    <th>Status</th>
+                                    <th style="text-align:right;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="eventsManagerTable">
+                                <!-- Populated -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 3: COORDINATORS ==================== -->
+        <div class="tab-content-panel" id="panel-coordinators">
+            <div class="card">
+                <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                    <div>
+                        <h3 class="card-title" style="margin:0 0 4px 0;">Faculty Coordinator Privilege & Access Control</h3>
+                        <p style="font-size:0.85rem; color:var(--text-muted); margin:0;">
+                            Only System Administrators can grant or revoke Faculty Coordinator credentials.
+                        </p>
+                    </div>
+                    <button onclick="openAddCoordModal()" class="btn btn-primary btn-sm">
+                        + Grant Access to Faculty
+                    </button>
+                </div>
+                <div class="card-body" style="padding:0;">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Faculty Name</th>
+                                    <th>Department & Title</th>
+                                    <th>Email</th>
+                                    <th>Assigned Events</th>
+                                    <th>Access Status</th>
+                                    <th style="text-align:right;">Admin Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="coordinatorsTableBody">
+                                <!-- Populated -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 4: STUDENTS REGISTRY ==================== -->
+        <div class="tab-content-panel" id="panel-students">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Enrolled Students Directory</h3>
+                </div>
+                <div class="card-body" style="padding:0;">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Student ID</th>
+                                    <th>Full Name</th>
+                                    <th>Email</th>
+                                    <th>Department</th>
+                                    <th>Year of Study</th>
+                                    <th>Total Bookings</th>
+                                    <th>Account Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentsTableBody">
+                                <!-- Populated -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 5: BOOKINGS AUDIT ==================== -->
+        <div class="tab-content-panel" id="panel-bookings">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Global Bookings & Revenue Ledger</h3>
+                </div>
+                <div class="card-body" style="padding:0;">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Booking Ref</th>
+                                    <th>Student Name</th>
+                                    <th>Event Title</th>
+                                    <th>Tickets</th>
+                                    <th>Total Paid</th>
+                                    <th>Booking Status</th>
+                                    <th>Timestamp</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminBookingsTable">
+                                <!-- Populated -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- ==================== MODAL: CREATE NEW EVENT ==================== -->
+<div class="modal-backdrop" id="createEventModal">
+    <div class="modal-box">
+        <div style="padding:18px 24px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; background:#f8fafc;">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:1.2rem;">🗓️</span>
+                <h3 style="font-size:1.15rem; font-weight:800; color:var(--text-primary); margin:0;">
+                    Create New Campus Event
+                </h3>
+            </div>
+            <button onclick="closeCreateEventModal()" style="border:none; background:none; font-size:1.4rem; cursor:pointer; color:#64748b;">&times;</button>
+        </div>
+        
+        <form id="createEventForm" style="padding:24px;">
+            <div class="form-group">
+                <label class="form-label form-label-required">Event Title</label>
+                <input type="text" id="evTitle" class="form-control" placeholder="e.g. National Robotics & Autonomous Systems Expo 2026" required>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label form-label-required">Academic Category</label>
+                    <select id="evCategory" class="form-select" required>
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label form-label-required">Assign Faculty Coordinator</label>
+                    <select id="evCoordinator" class="form-select" required>
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label form-label-required">Event Date</label>
+                    <input type="date" id="evDate" class="form-control" value="2026-10-15" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label form-label-required">Start Time</label>
+                    <input type="text" id="evStartTime" class="form-control" placeholder="e.g. 10:00 AM" value="10:00 AM" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label form-label-required">Venue / Hall</label>
+                    <input type="text" id="evVenue" class="form-control" placeholder="e.g. Innovation Hall C" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label form-label-required">Venue Full Address</label>
+                    <input type="text" id="evVenueAddress" class="form-control" placeholder="e.g. Technology Quad, North Campus" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label form-label-required">Ticket Price ($ USD)</label>
+                    <input type="number" id="evPrice" class="form-control" min="0" step="0.50" value="0.00" placeholder="0.00 for Free" required>
+                    <small style="color:var(--text-muted); font-size:0.75rem;">Set to 0.00 for Free admission.</small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label form-label-required">Total Seating Capacity</label>
+                    <input type="number" id="evCapacity" class="form-control" min="1" max="5000" value="200" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label form-label-required">Short Summary (Teaser)</label>
+                <input type="text" id="evShortDesc" class="form-control" placeholder="e.g. Join researchers for demonstrations of autonomous robotics." required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Full Event Agenda & Description</label>
+                <textarea id="evDescription" class="form-control" rows="3" placeholder="Keynote speaker details, competition tracks, and schedule..."></textarea>
+            </div>
+
+            <div class="form-group" style="margin-bottom:20px;">
+                <label style="display:flex; align-items:center; gap:8px; font-weight:600; cursor:pointer;">
+                    <input type="checkbox" id="evFeatured" checked> Feature on Homepage Hero Carousel
+                </label>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:10px; border-top:1px solid #e2e8f0; padding-top:16px;">
+                <button type="button" onclick="closeCreateEventModal()" class="btn btn-outline-secondary btn-sm">Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm" style="font-weight:700; padding:8px 20px;">Publish Event &rarr;</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ==================== MODAL: GRANT COORDINATOR ACCESS ==================== -->
+<div class="modal-backdrop" id="addCoordModal">
+    <div class="modal-box">
+        <div style="padding:18px 22px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; background:#f8fafc;">
+            <h3 style="font-size:1.1rem; font-weight:700; color:var(--text-primary); margin:0;">
+                Grant Faculty Coordinator Access
+            </h3>
+            <button onclick="closeAddCoordModal()" style="border:none; background:none; font-size:1.4rem; cursor:pointer; color:#64748b;">&times;</button>
+        </div>
+        <form id="grantCoordForm" style="padding:22px;">
+            <div class="form-group">
+                <label class="form-label form-label-required">Faculty Full Name</label>
+                <input type="text" id="coordName" class="form-control" placeholder="e.g. Prof. David Miller" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label form-label-required">Institutional Email</label>
+                <input type="email" id="coordEmail" class="form-control" placeholder="e.g. d.miller@campus.edu" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label form-label-required">Academic Department</label>
+                <input type="text" id="coordDept" class="form-control" placeholder="e.g. Electrical & Computer Engineering" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label form-label-required">Faculty Designation / Title</label>
+                <input type="text" id="coordDesig" class="form-control" placeholder="e.g. Associate Professor & Department Chair" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Contact Phone</label>
+                <input type="tel" id="coordPhone" class="form-control" placeholder="+1 (555) 000-0000">
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+                <button type="button" onclick="closeAddCoordModal()" class="btn btn-outline-secondary btn-sm">Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm">Grant Coordinator Privileges</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="assets/js/mock-db.js"></script>
+<script>
+// 1. Strict RBAC enforcement
+MockDB.requireRole(['admin']);
+
+document.addEventListener('DOMContentLoaded', () => {
+    MockDB.renderHeaderNav('admin');
+
+    const currentUser = MockDB.getCurrentUser();
+    if (currentUser) {
+        document.getElementById('adminUserName').textContent = currentUser.name;
+    }
+
+    // Populate dropdowns in Create Event Modal
+    populateEventModalDropdowns();
+
+    // Render all dashboard sections
+    renderAll();
+
+    // Event Create Form submission
+    document.getElementById('createEventForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const catSelect = document.getElementById('evCategory');
+        const selectedCatName = catSelect.options[catSelect.selectedIndex].text;
+        const coordSelect = document.getElementById('evCoordinator');
+        const selectedCoordName = coordSelect.options[coordSelect.selectedIndex].text;
+
+        const newEvData = {
+            title: document.getElementById('evTitle').value.trim(),
+            category_id: parseInt(catSelect.value, 10),
+            category_name: selectedCatName,
+            coordinator_name: selectedCoordName,
+            coordinator_email: coordSelect.value,
+            event_date: document.getElementById('evDate').value,
+            start_time: document.getElementById('evStartTime').value.trim(),
+            venue: document.getElementById('evVenue').value.trim(),
+            venue_address: document.getElementById('evVenueAddress').value.trim(),
+            ticket_price: parseFloat(document.getElementById('evPrice').value) || 0,
+            max_capacity: parseInt(document.getElementById('evCapacity').value, 10) || 100,
+            short_description: document.getElementById('evShortDesc').value.trim(),
+            description: document.getElementById('evDescription').value.trim(),
+            is_featured: document.getElementById('evFeatured').checked
+        };
+
+        try {
+            const created = MockDB.createEvent(newEvData);
+            alert(`✅ Event successfully created and published!\n"${created.title}"`);
+            closeCreateEventModal();
+            document.getElementById('createEventForm').reset();
+            renderAll();
+            switchTab('events'); // Auto jump to events tab
+        } catch (err) {
+            alert('Error creating event: ' + err.message);
+        }
+    });
+
+    // Coordinator Grant Form submission
+    document.getElementById('grantCoordForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('coordName').value.trim();
+        const email = document.getElementById('coordEmail').value.trim();
+        const department = document.getElementById('coordDept').value.trim();
+        const designation = document.getElementById('coordDesig').value.trim();
+        const phone = document.getElementById('coordPhone').value.trim();
+
+        try {
+            MockDB.createCoordinator({ name, email, department, designation, phone });
+            alert(`✅ Coordinator privileges granted to ${name} (${email})!`);
+            closeAddCoordModal();
+            document.getElementById('grantCoordForm').reset();
+            populateEventModalDropdowns();
+            renderAll();
+            switchTab('coordinators');
+        } catch (err) {
+            alert('Error: ' + err.message);
+        }
+    });
+});
+
+function switchTab(tabId) {
+    // Buttons
+    document.querySelectorAll('.admin-tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
+
+    const tabBtn = document.getElementById('tabBtn' + tabId.charAt(0).toUpperCase() + tabId.slice(1));
+    if (tabBtn) tabBtn.classList.add('active');
+
+    const sbBtn = document.getElementById('sbTab' + tabId.charAt(0).toUpperCase() + tabId.slice(1));
+    if (sbBtn) sbBtn.classList.add('active');
+
+    // Panels
+    document.querySelectorAll('.tab-content-panel').forEach(panel => panel.classList.remove('active'));
+    const target = document.getElementById('panel-' + tabId);
+    if (target) target.classList.add('active');
+}
+
+function renderAll() {
+    renderOverview();
+    renderEventsManagerTable();
+    renderCoordinatorsTable();
+    renderStudentsTable();
+    renderBookingsTable();
+    updateTabCounts();
+    renderCharts();
+}
+
+function populateEventModalDropdowns() {
+    const categories = MockDB.getCategories();
+    const catSelect = document.getElementById('evCategory');
+    catSelect.innerHTML = categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
+    const coords = MockDB.getCoordinators();
+    const coordSelect = document.getElementById('evCoordinator');
+    coordSelect.innerHTML = coords.map(c => `<option value="${c.email}">${c.name} (${c.department})</option>`).join('');
+}
+
+function renderOverview() {
+    const events = MockDB.getEvents();
+    const bookings = MockDB.getBookings();
+    const coords = MockDB.getCoordinators();
+
+    const totalRev = bookings.reduce((sum, b) => sum + (b.total_amount || 0), 0);
+    document.getElementById('metricTotalRev').textContent = '$' + totalRev.toFixed(2);
+    document.getElementById('metricTotalEvents').textContent = events.length;
+    document.getElementById('metricTotalBookings').textContent = bookings.length;
+    document.getElementById('metricTotalCoords').textContent = coords.length;
+
+    // Recent bookings in overview
+    const tbody = document.getElementById('overviewBookingsTable');
+    tbody.innerHTML = bookings.slice(0, 5).map(b => `
+        <tr>
+            <td><code style="font-weight:700; color:var(--primary-900);">${b.booking_reference}</code></td>
+            <td><strong>${b.user_name}</strong><div style="font-size:0.75rem; color:var(--text-muted);">${b.user_email}</div></td>
+            <td><strong>${b.event_title}</strong></td>
+            <td>${b.quantity} Pass(es)</td>
+            <td class="td-price" style="font-weight:700;">${b.total_amount === 0 ? 'Free' : '$' + b.total_amount.toFixed(2)}</td>
+            <td><span class="badge badge-success">${b.status}</span></td>
+            <td>${b.booked_at}</td>
+        </tr>
+    `).join('');
+}
+
+function renderEventsManagerTable() {
+    const events = MockDB.getEvents();
+    const tbody = document.getElementById('eventsManagerTable');
+
+    tbody.innerHTML = events.map(ev => {
+        const booked = ev.max_capacity - ev.available_seats;
+        const pct = Math.round((booked / ev.max_capacity) * 100);
+        const price = ev.ticket_price === 0 ? 'Free' : '$' + ev.ticket_price.toFixed(2);
+        return `
+            <tr>
+                <td>
+                    <strong style="font-size:0.95rem;">${ev.title}</strong>
+                    <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">
+                        <span class="badge badge-secondary" style="font-size:0.7rem; padding:2px 6px;">${ev.category_name}</span>
+                        ${ev.is_featured ? '<span class="badge badge-amber" style="font-size:0.7rem; padding:2px 6px;">⭐ Featured</span>' : ''}
+                    </div>
+                </td>
+                <td>
+                    <div><strong>${ev.coordinator_name}</strong></div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">${ev.coordinator_dept || ''}</div>
+                </td>
+                <td>
+                    <div>${ev.event_date}</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">${ev.start_time}</div>
+                </td>
+                <td>${ev.venue}</td>
+                <td style="min-width:160px;">
+                    <div class="capacity-labels" style="margin-bottom:3px; font-size:0.75rem;">
+                        <span><strong>${booked}</strong> / ${ev.max_capacity} booked</span>
+                        <span>${pct}%</span>
+                    </div>
+                    <div class="capacity-progress" style="height:6px;">
+                        <div class="capacity-fill" style="width:${pct}%;"></div>
+                    </div>
+                </td>
+                <td class="td-price" style="font-weight:700;">${price}</td>
+                <td>
+                    <span class="badge ${ev.status === 'open' ? 'badge-success' : 'badge-danger'}">
+                        ${ev.status.toUpperCase()}
+                    </span>
+                </td>
+                <td style="text-align:right;">
+                    <button onclick="toggleEventStatus(${ev.id})" class="btn btn-outline-secondary btn-sm" style="font-size:0.75rem; padding:3px 7px;">
+                        ${ev.status === 'open' ? 'Close' : 'Open'}
+                    </button>
+                    <a href="event-details.html?id=${ev.id}" target="_blank" class="btn btn-outline-primary btn-sm" style="font-size:0.75rem; padding:3px 7px;">
+                        View
+                    </a>
+                    <button onclick="deleteEvent(${ev.id})" class="btn btn-outline-secondary btn-sm" style="font-size:0.75rem; padding:3px 7px; color:#ef4444;" title="Delete">
+                        &times;
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function toggleEventStatus(id) {
+    const updated = MockDB.toggleEventStatus(id);
+    renderAll();
+}
+
+function deleteEvent(id) {
+    if (confirm('Are you sure you want to permanently delete this event?')) {
+        MockDB.deleteEvent(id);
+        renderAll();
+    }
+}
+
+function renderCoordinatorsTable() {
+    const coords = MockDB.getCoordinators();
+    const tbody = document.getElementById('coordinatorsTableBody');
+
+    tbody.innerHTML = coords.map(c => `
+        <tr>
+            <td>
+                <strong>${c.name}</strong>
+                <div style="font-size:0.75rem; color:var(--text-muted);">${c.phone || 'No phone'}</div>
+            </td>
+            <td>
+                <div>${c.department}</div>
+                <div style="font-size:0.75rem; color:var(--text-muted);">${c.designation}</div>
+            </td>
+            <td><code>${c.email}</code></td>
+            <td><strong>${c.assigned_events || 0}</strong> events</td>
+            <td>
+                <span class="badge ${c.status === 'active' ? 'badge-active' : 'badge-suspended'}">
+                    ${c.status === 'active' ? 'Active Privileges' : 'Suspended by Admin'}
+                </span>
+            </td>
+            <td style="text-align:right;">
+                <button onclick="toggleCoordStatus(${c.id})" class="btn ${c.status === 'active' ? 'btn-outline-secondary' : 'btn-primary'} btn-sm" style="font-size:0.75rem; padding:4px 8px;">
+                    ${c.status === 'active' ? 'Revoke Access' : 'Restore Access'}
+                </button>
+                <button onclick="removeCoord(${c.id})" class="btn btn-outline-secondary btn-sm" style="font-size:0.75rem; padding:4px 8px; color:#ef4444; margin-left:4px;" title="Delete">
+                    &times;
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function toggleCoordStatus(id) {
+    const coord = MockDB.toggleCoordinatorStatus(id);
+    alert(`Access status for ${coord.name} changed to: ${coord.status.toUpperCase()}`);
+    renderAll();
+}
+
+function removeCoord(id) {
+    if (confirm('Are you sure you want to permanently remove this Faculty Coordinator?')) {
+        MockDB.deleteCoordinator(id);
+        renderAll();
+    }
+}
+
+function renderStudentsTable() {
+    const students = MockDB.getStudents();
+    const tbody = document.getElementById('studentsTableBody');
+
+    tbody.innerHTML = students.map(s => `
+        <tr>
+            <td><code style="font-weight:700; color:var(--primary-900);">${s.student_id}</code></td>
+            <td><strong>${s.name}</strong></td>
+            <td>${s.email}</td>
+            <td>${s.department}</td>
+            <td>${s.year}</td>
+            <td><strong>${s.total_bookings}</strong> bookings</td>
+            <td><span class="badge badge-success">Enrolled</span></td>
+        </tr>
+    `).join('');
+}
+
+function renderBookingsTable() {
+    const bookings = MockDB.getBookings();
+    const tbody = document.getElementById('adminBookingsTable');
+
+    tbody.innerHTML = bookings.map(b => `
+        <tr>
+            <td><code style="font-weight:700; color:var(--primary-900);">${b.booking_reference}</code></td>
+            <td><strong>${b.user_name}</strong><div style="font-size:0.75rem; color:var(--text-muted);">${b.user_email}</div></td>
+            <td><strong>${b.event_title}</strong></td>
+            <td>${b.quantity}</td>
+            <td class="td-price" style="font-weight:700;">${b.total_amount === 0 ? 'Free' : '$' + b.total_amount.toFixed(2)}</td>
+            <td><span class="badge badge-success">${b.status}</span></td>
+            <td>${b.booked_at}</td>
+        </tr>
+    `).join('');
+}
+
+function updateTabCounts() {
+    document.getElementById('tabCountEvents').textContent = MockDB.getEvents().length;
+    document.getElementById('tabCountCoords').textContent = MockDB.getCoordinators().length;
+    document.getElementById('tabCountStudents').textContent = MockDB.getStudents().length;
+    document.getElementById('tabCountBookings').textContent = MockDB.getBookings().length;
+}
+
+function openCreateEventModal() {
+    document.getElementById('createEventModal').classList.add('open');
+}
+
+function closeCreateEventModal() {
+    document.getElementById('createEventModal').classList.remove('open');
+}
+
+function openAddCoordModal() {
+    document.getElementById('addCoordModal').classList.add('open');
+}
+
+function closeAddCoordModal() {
+    document.getElementById('addCoordModal').classList.remove('open');
+}
+
+function renderCharts() {
+    const barCanvas = document.getElementById('adminBarChart');
+    if (barCanvas) {
+        const ctx = barCanvas.getContext('2d');
+        const width = barCanvas.width = barCanvas.parentElement.clientWidth || 450;
+        const height = barCanvas.height = 200;
+        const data = [2, 5, 3, 7, 4, 8, 6];
+        const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        const barWidth = 28;
+        const spacing = width / data.length;
+
+        ctx.fillStyle = '#1e40af';
+        data.forEach((val, idx) => {
+            const x = spacing * idx + (spacing - barWidth) / 2;
+            const barH = (val / 10) * 140;
+            const y = height - barH - 30;
+            ctx.fillRect(x, y, barWidth, barH);
+            
+            ctx.fillStyle = '#475569';
+            ctx.font = '11px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(labels[idx], x + barWidth / 2, height - 10);
+            ctx.fillStyle = '#1e40af';
+        });
+    }
+
+    const donutCanvas = document.getElementById('adminDonutChart');
+    if (donutCanvas) {
+        const ctx = donutCanvas.getContext('2d');
+        donutCanvas.width = 200;
+        donutCanvas.height = 200;
+        const centerX = 100, centerY = 100;
+        
+        const slices = [
+            { val: 2, color: '#1e40af' },
+            { val: 1, color: '#059669' },
+            { val: 2, color: '#d97706' }
+        ];
+        const total = 5;
+        let startAngle = -Math.PI / 2;
+
+        slices.forEach(s => {
+            const angle = (s.val / total) * 2 * Math.PI;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 70, startAngle, startAngle + angle);
+            ctx.arc(centerX, centerY, 40, startAngle + angle, startAngle, true);
+            ctx.closePath();
+            ctx.fillStyle = s.color;
+            ctx.fill();
+            startAngle += angle;
+        });
+
+        ctx.font = 'bold 16px sans-serif';
+        ctx.fillStyle = '#0f172a';
+        ctx.textAlign = 'center';
+        ctx.fillText(MockDB.getEvents().length + ' Events', centerX, centerY + 5);
+    }
+}
+</script>
+</body>
+</html>

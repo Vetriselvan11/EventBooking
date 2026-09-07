@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusEvent Hub — University & Enterprise Event Platform</title>
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/landing.css">
+</head>
+<body>
+
+<!-- Header -->
+<header class="site-header">
+    <div class="header-inner">
+        <a href="index.html" class="brand-link">
+            <div class="brand-logo-mark">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z"/></svg>
+            </div>
+            <div class="brand-text">
+                <span class="brand-name">CampusEvent Hub</span>
+                <span class="brand-badge">Academic & Enterprise</span>
+            </div>
+        </a>
+
+        <nav class="main-nav">
+            <ul class="nav-list">
+                <li><a href="index.html" class="nav-link active">Home</a></li>
+                <li><a href="events.html" class="nav-link">Discover Events</a></li>
+                <li><a href="verify-ticket.html" class="nav-link">Verify Ticket</a></li>
+                <li><a href="student-dashboard.html" class="nav-link nav-link-portal">Student Portal</a></li>
+                <li><a href="coordinator-dashboard.html" class="nav-link nav-link-portal">Coordinator</a></li>
+                <li><a href="admin-dashboard.html" class="nav-link nav-link-portal">Admin Console</a></li>
+            </ul>
+        </nav>
+
+        <div class="header-actions">
+            <a href="login.html" class="btn btn-outline-primary btn-sm">Sign In</a>
+            <a href="register.html" class="btn btn-primary btn-sm">Student Register</a>
+        </div>
+    </div>
+</header>
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="hero-inner">
+            <div class="hero-content">
+                <div class="hero-kicker">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+                    Verified Academic & Enterprise Platform
+                </div>
+                <h1 class="hero-title">
+                    Discover, Book & Attend <span class="hero-highlight">Campus Events</span> with Ease.
+                </h1>
+                <p class="hero-description">
+                    The centralized management system for university symposiums, hackathons, academic conferences, athletic championships, and career networking. Secure instant registration with digital QR passes.
+                </p>
+                <div class="hero-actions">
+                    <a href="events.html" class="btn btn-primary btn-lg">
+                        Explore Events &rarr;
+                    </a>
+                    <a href="register.html" class="btn btn-outline-secondary btn-lg" style="color:#fff; border-color:rgba(255,255,255,0.3);">
+                        Student Registration
+                    </a>
+                </div>
+            </div>
+
+            <!-- Hero Upcoming Preview Panel -->
+            <div class="hero-stats-panel">
+                <h3 class="hero-panel-title">Happening Soon On Campus</h3>
+                <div id="heroUpcomingEvents">
+                    <!-- Populated dynamically via mock-db.js -->
+                </div>
+                <div style="margin-top:16px; text-align:right;">
+                    <a href="events.html" style="color:#60a5fa; font-size:0.85rem; font-weight:600;">
+                        View All Upcoming &rarr;
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Landing Content -->
+<main class="main-content">
+    <div class="container">
+
+        <!-- Category Grid Section -->
+        <div class="section-header-wrap">
+            <div>
+                <h2 class="section-title">Explore by Discipline</h2>
+                <p class="section-subtitle">Find symposiums, networking sessions, and competitions across domains</p>
+            </div>
+            <a href="events.html" class="btn btn-outline-primary btn-sm">All Categories</a>
+        </div>
+
+        <div class="category-grid" id="landingCategories">
+            <!-- Dynamically populated -->
+        </div>
+
+        <!-- Featured Events Grid -->
+        <div class="section-header-wrap" style="margin-top:40px;">
+            <div>
+                <h2 class="section-title">Featured Campus Events</h2>
+                <p class="section-subtitle">High-impact workshops, guest lectures, and student competitions</p>
+            </div>
+            <a href="events.html" class="btn btn-outline-primary btn-sm">View Full Catalog</a>
+        </div>
+
+        <div class="events-grid" id="landingFeaturedEvents">
+            <!-- Dynamically populated -->
+        </div>
+
+        <!-- How It Works Timeline -->
+        <div class="workflow-section">
+            <div style="text-align:center; max-width:600px; margin:0 auto 36px auto;">
+                <h2 class="section-title">How CampusEvent Hub Works</h2>
+                <p class="section-subtitle">A seamless 3-step workflow from discovery to entrance check-in</p>
+            </div>
+
+            <div class="workflow-grid">
+                <div class="workflow-card">
+                    <div class="workflow-step-num">1</div>
+                    <h3 class="workflow-card-title">Discover & Select</h3>
+                    <p class="workflow-card-text">
+                        Browse active academic symposiums, tech hackathons, or workshops with verified seat availability.
+                    </p>
+                </div>
+
+                <div class="workflow-card">
+                    <div class="workflow-step-num">2</div>
+                    <h3 class="workflow-card-title">Instant Registration</h3>
+                    <p class="workflow-card-text">
+                        Authenticate with your student/faculty ID, specify attendee details, and complete zero-friction checkout.
+                    </p>
+                </div>
+
+                <div class="workflow-card">
+                    <div class="workflow-step-num">3</div>
+                    <h3 class="workflow-card-title">Digital Entry Pass</h3>
+                    <p class="workflow-card-text">
+                        Receive instant cryptographic digital passes with QR verification for rapid gate check-in at the venue.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Strip -->
+        <div class="stats-strip">
+            <div class="container">
+                <div class="stats-grid">
+                    <div>
+                        <div class="stat-metric-num">50+</div>
+                        <div class="stat-metric-label">Published Events</div>
+                    </div>
+                    <div>
+                        <div class="stat-metric-num">2,400+</div>
+                        <div class="stat-metric-label">Registered Students</div>
+                    </div>
+                    <div>
+                        <div class="stat-metric-num">3,800+</div>
+                        <div class="stat-metric-label">Confirmed Passes</div>
+                    </div>
+                    <div>
+                        <div class="stat-metric-num">100%</div>
+                        <div class="stat-metric-label">Verified QR Passes</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA Banner -->
+        <div class="cta-banner">
+            <h2>Organizing an Academic or Campus Event?</h2>
+            <p>
+                Faculty members, student club chairs, and department coordinators can request event creation privileges to manage rosters and track live entrance check-ins.
+            </p>
+            <div style="display:flex; justify-content:center; gap:14px; flex-wrap:wrap;">
+                <a href="login.html" class="btn btn-accent btn-lg">
+                    Coordinator Sign In &rarr;
+                </a>
+                <a href="events.html" class="btn btn-outline-secondary btn-lg" style="color:#ffffff; border-color:rgba(255,255,255,0.3);">
+                    Browse Event Directory
+                </a>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<!-- Footer -->
+<footer class="site-footer">
+    <div class="footer-container">
+        <div class="footer-grid">
+            <div class="footer-col">
+                <h3 style="color:#fff; margin-bottom:12px;">CampusEvent Hub</h3>
+                <p style="font-size:0.88rem; color:#94a3b8;">
+                    The centralized academic and enterprise event discovery, registration, and attendee credentialing platform.
+                </p>
+            </div>
+            <div class="footer-col">
+                <h4 class="footer-heading">Platform Discovery</h4>
+                <ul class="footer-links">
+                    <li><a href="index.html">Platform Home</a></li>
+                    <li><a href="events.html">Browse All Events</a></li>
+                    <li><a href="verify-ticket.html">Ticket Verifier Tool</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4 class="footer-heading">Role Portals</h4>
+                <ul class="footer-links">
+                    <li><a href="login.html">Sign In</a></li>
+                    <li><a href="register.html">Student Register</a></li>
+                    <li><a href="student-dashboard.html">Student Dashboard</a></li>
+                    <li><a href="coordinator-dashboard.html">Coordinator Portal</a></li>
+                    <li><a href="admin-dashboard.html">Admin Console</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4 class="footer-heading">Architecture</h4>
+                <p style="font-size:0.85rem; color:#94a3b8;">
+                    Built with semantic HTML5, CSS3 Variables, and client-side database synchronization.
+                </p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div>&copy; 2026 CampusEvent Hub. Production-Grade Event Booking System.</div>
+            <div>
+                <span class="tech-badge">HTML5</span>
+                <span class="tech-badge">Vanilla CSS3</span>
+                <span class="tech-badge">Client-Side State</span>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script src="assets/js/mock-db.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    MockDB.renderHeaderNav('home');
+    const events = MockDB.getEvents();
+    const categories = MockDB.getCategories();
+
+    // 1. Populate Hero Upcoming
+    const heroBox = document.getElementById('heroUpcomingEvents');
+    if (heroBox) {
+        heroBox.innerHTML = events.slice(0, 3).map(ev => {
+            const date = new Date(ev.event_date);
+            const month = date.toLocaleString('en-US', { month: 'short' });
+            const day = date.getDate();
+            const price = ev.ticket_price === 0 ? 'Free' : '$' + ev.ticket_price.toFixed(2);
+            return `
+                <div class="hero-quick-event-item">
+                    <div class="hero-event-date-badge">
+                        <span class="hero-event-date-month">${month}</span>
+                        <span class="hero-event-date-day">${day}</span>
+                    </div>
+                    <div class="hero-quick-event-details">
+                        <h5><a href="event-details.html?id=${ev.id}">${ev.title}</a></h5>
+                        <div class="hero-quick-event-meta">
+                            ${ev.venue} · <strong>${price}</strong>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // 2. Populate Categories
+    const catBox = document.getElementById('landingCategories');
+    if (catBox) {
+        catBox.innerHTML = categories.map(cat => `
+            <a href="events.html?category=${cat.id}" class="category-card">
+                <div class="category-icon-box">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"/><path d="M6 6h.008v.008H6V6z"/></svg>
+                </div>
+                <div class="category-name">${cat.name}</div>
+                <div class="category-count">${cat.event_count} Active Events</div>
+            </a>
+        `).join('');
+    }
+
+    // 3. Populate Featured Events
+    const featBox = document.getElementById('landingFeaturedEvents');
+    if (featBox) {
+        featBox.innerHTML = events.map(ev => {
+            const booked = ev.max_capacity - ev.available_seats;
+            const pct = Math.round((booked / ev.max_capacity) * 100);
+            const fillClass = pct >= 90 ? 'fill-danger' : (pct >= 70 ? 'fill-warning' : '');
+            const price = ev.ticket_price === 0 ? 'Free' : '$' + ev.ticket_price.toFixed(2);
+            return `
+                <div class="event-card">
+                    <div class="event-card-banner">
+                        <svg width="100%" height="100%" viewBox="0 0 400 200" preserveAspectRatio="none">
+                            <rect width="400" height="200" fill="#1e293b" />
+                            <circle cx="200" cy="100" r="50" fill="rgba(30, 64, 175, 0.3)" />
+                            <text x="50%" y="54%" text-anchor="middle" fill="#93c5fd" font-size="15" font-weight="700" font-family="sans-serif">${ev.category_name}</text>
+                        </svg>
+                        <span class="event-category-badge">${ev.category_name}</span>
+                        <span class="event-price-tag">${price}</span>
+                    </div>
+                    <div class="event-card-body">
+                        <h3 class="event-card-title">
+                            <a href="event-details.html?id=${ev.id}">${ev.title}</a>
+                        </h3>
+                        <p class="event-card-desc">${ev.short_description}</p>
+                        <ul class="event-meta-list">
+                            <li class="event-meta-item">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
+                                <span>${ev.event_date} · ${ev.start_time}</span>
+                            </li>
+                            <li class="event-meta-item">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
+                                <span>${ev.venue}</span>
+                            </li>
+                        </ul>
+                        <div class="event-capacity-bar-wrap">
+                            <div class="capacity-labels">
+                                <span>Capacity</span>
+                                <span><strong>${ev.available_seats}</strong> seats left</span>
+                            </div>
+                            <div class="capacity-progress">
+                                <div class="capacity-fill ${fillClass}" style="width:${pct}%;"></div>
+                            </div>
+                        </div>
+                        <div class="event-card-footer">
+                            <span class="badge badge-success">Open for Booking</span>
+                            <a href="event-details.html?id=${ev.id}" class="btn btn-primary btn-sm">View & Book</a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+/* =====================================================================
+   CampusEvent Hub — Dashboard & Portal Layouts (dashboard.css)
+   ===================================================================== */
+
+.dashboard-layout {
+  display: flex;
+  min-height: calc(100vh - var(--header-height));
+  background: var(--bg-app);
+}
+
+.dashboard-sidebar {
+  width: var(--sidebar-width);
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+.sidebar-brand-badge {
+  padding: 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: #f8fafc;
+}
+
+.sidebar-role-tag {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  padding: 3px 8px;
+  border-radius: var(--radius-xs);
+  margin-bottom: 8px;
+}
+
+.role-tag-admin { background: #fee2e2; color: #991b1b; }
+.role-tag-coordinator { background: #fef3c7; color: #92400e; }
+.role-tag-student { background: #dbeafe; color: #1e40af; }
+
+.sidebar-user-summary { display: flex; flex-direction: column; }
+.user-greeting { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; }
+.user-name-full { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); }
+.user-dept-sub { font-size: 0.78rem; color: var(--text-muted); }
+
+.sidebar-nav { padding: 16px 12px; overflow-y: auto; flex: 1; }
+.nav-section-label { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; padding: 12px 10px 6px 10px; }
+.sidebar-menu { list-style: none; margin-bottom: 10px; }
+.sidebar-link {
+  display: flex; align-items: center; gap: 12px; padding: 9px 12px; color: var(--text-secondary);
+  font-size: 0.9rem; font-weight: 500; border-radius: var(--radius-sm); transition: all 0.12s ease; text-decoration: none;
+}
+.sidebar-link:hover { background: var(--bg-subtle); color: var(--primary); }
+.sidebar-link.active { background: var(--primary-subtle); color: var(--primary); font-weight: 600; }
+.sb-icon { color: inherit; }
+
+.dashboard-workspace {
+  flex: 1;
+  padding: 32px 36px 60px 36px;
+  max-width: 1400px;
+  width: 100%;
+}
+
+.dashboard-page-header {
+  display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 28px; gap: 16px; flex-wrap: wrap;
+}
+.dashboard-header-title h1 { font-size: 1.75rem; font-weight: 800; margin-bottom: 4px; }
+.dashboard-header-title p { color: var(--text-muted); font-size: 0.92rem; margin: 0; }
+.dashboard-header-actions { display: flex; align-items: center; gap: 10px; }
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.metric-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 20px 22px;
+  box-shadow: var(--shadow-xs);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.metric-info { display: flex; flex-direction: column; }
+.metric-label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+.metric-value { font-size: 1.85rem; font-weight: 800; color: var(--text-primary); line-height: 1.1; margin-bottom: 6px; }
+.metric-sub { font-size: 0.78rem; color: var(--text-secondary); }
+
+.metric-icon-box {
+  width: 44px; height: 44px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.metric-icon-blue   { background: #eff6ff; color: #1e40af; }
+.metric-icon-green  { background: #ecfdf5; color: #065f46; }
+.metric-icon-amber  { background: #fffbeb; color: #92400e; }
+.metric-icon-purple { background: #f5f3ff; color: #6b21a8; }
+
+.filter-toolbar {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.filter-group-left { display: flex; align-items: center; gap: 12px; flex: 1; flex-wrap: wrap; }
+.search-input-wrapper { position: relative; min-width: 260px; flex: 1; }
+.search-input-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+.search-input-field { padding-left: 36px; }
+
+.dashboard-grid-split {
+  display: grid;
+  grid-template-columns: 1.3fr 0.7fr;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.chart-container { position: relative; width: 100%; height: 240px; }

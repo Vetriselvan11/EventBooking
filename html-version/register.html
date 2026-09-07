@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Registration — CampusEvent Hub</title>
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body style="background:#f1f5f9; min-height:100vh; display:flex; flex-direction:column;">
+
+<header class="site-header">
+    <div class="header-inner">
+        <a href="index.html" class="brand-link">
+            <div class="brand-logo-mark">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z"/></svg>
+            </div>
+            <div class="brand-text">
+                <span class="brand-name">CampusEvent Hub</span>
+                <span class="brand-badge">Academic & Enterprise</span>
+            </div>
+        </a>
+    </div>
+</header>
+
+<main class="main-content" style="padding:40px 0 70px 0;">
+    <div class="container" style="max-width:680px;">
+        
+        <div class="card" style="box-shadow:var(--shadow-md); border-top:4px solid var(--primary);">
+            <div class="card-header" style="display:block; padding:24px 28px 16px 28px;">
+                <h2 style="font-size:1.45rem; font-weight:800; margin-bottom:4px;">Student Registration</h2>
+                <p style="font-size:0.88rem; color:var(--text-muted); margin:0;">Create your institutional profile to reserve passes for campus events.</p>
+            </div>
+
+            <div class="card-body" style="padding:28px;">
+                <form id="regForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label form-label-required">Full Name</label>
+                            <input type="text" id="regName" class="form-control" value="Alexander Wright" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label form-label-required">Student ID</label>
+                            <input type="text" id="regId" class="form-control" value="STU-2026-8841" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label form-label-required">University Email</label>
+                            <input type="email" id="regEmail" class="form-control" value="student@campus.edu" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone</label>
+                            <input type="text" class="form-control" value="+1 (555) 881-3049">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label form-label-required">Department</label>
+                            <select id="regDept" class="form-select" required>
+                                <option value="Computer Science & Engineering" selected>Computer Science & Engineering</option>
+                                <option value="Electrical Engineering">Electrical Engineering</option>
+                                <option value="Business Administration">Business Administration</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label form-label-required">Year of Study</label>
+                            <select class="form-select" required>
+                                <option value="3rd Year" selected>3rd Year (Junior)</option>
+                                <option value="1st Year">1st Year (Freshman)</option>
+                                <option value="2nd Year">2nd Year (Sophomore)</option>
+                                <option value="4th Year">4th Year (Senior)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label form-label-required">Password</label>
+                            <input type="password" class="form-control" value="Student@123" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label form-label-required">Confirm Password</label>
+                            <input type="password" class="form-control" value="Student@123" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg btn-block" style="margin-top:10px;">
+                        Create Student Account &rarr;
+                    </button>
+                </form>
+            </div>
+
+            <div class="card-footer" style="text-align:center; font-size:0.86rem;">
+                Already registered? <a href="login.html" style="font-weight:600;">Sign In</a>
+                <div style="font-size:0.75rem; color:var(--text-muted); margin-top:8px;">
+                    Note: Student registration only. Faculty Coordinator accounts are provisioned exclusively by the Administrator.
+                </div>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<script src="assets/js/mock-db.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    MockDB.renderHeaderNav('');
+});
+
+document.getElementById('regForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const user = {
+        id: Date.now(),
+        name: document.getElementById('regName').value,
+        email: document.getElementById('regEmail').value,
+        role: 'student',
+        student_id: document.getElementById('regId').value,
+        department: document.getElementById('regDept').value
+    };
+    MockDB.setCurrentUser(user);
+    window.location.href = 'student-dashboard.html';
+});
+</script>
+</body>
+</html>

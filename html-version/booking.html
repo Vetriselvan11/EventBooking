@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Tickets & Attendees — CampusEvent Hub</title>
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+
+<header class="site-header">
+    <div class="header-inner">
+        <a href="index.html" class="brand-link">
+            <div class="brand-logo-mark">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z"/></svg>
+            </div>
+            <div class="brand-text">
+                <span class="brand-name">CampusEvent Hub</span>
+                <span class="brand-badge">Academic & Enterprise</span>
+            </div>
+        </a>
+
+        <nav class="main-nav">
+            <ul class="nav-list">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="events.html" class="nav-link">Discover Events</a></li>
+                <li><a href="student-dashboard.html" class="nav-link nav-link-portal">My Passes</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<main class="main-content" style="background:#f1f5f9; padding:36px 0 60px 0;">
+    <div class="container" style="max-width:860px;">
+
+        <!-- Step Indicator -->
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; background:#ffffff; padding:16px 24px; border-radius:var(--radius-md); border:1px solid var(--border-subtle);">
+            <div style="display:flex; align-items:center; gap:10px; color:var(--primary); font-weight:700;">
+                <span style="width:28px; height:28px; background:var(--primary); color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.85rem;">1</span>
+                <span>Attendee & Ticket Selection</span>
+            </div>
+            <div style="color:var(--text-muted);">&rarr;</div>
+            <div style="display:flex; align-items:center; gap:10px; color:var(--text-muted); font-weight:600;">
+                <span style="width:28px; height:28px; background:var(--bg-hover); color:var(--text-muted); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.85rem;">2</span>
+                <span>Payment & Verification</span>
+            </div>
+            <div style="color:var(--text-muted);">&rarr;</div>
+            <div style="display:flex; align-items:center; gap:10px; color:var(--text-muted); font-weight:600;">
+                <span style="width:28px; height:28px; background:var(--bg-hover); color:var(--text-muted); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.85rem;">3</span>
+                <span>Digital Pass Ready</span>
+            </div>
+        </div>
+
+        <form id="bookingForm">
+            <div style="display:grid; grid-template-columns: 1.6fr 1fr; gap:28px; align-items:start;">
+                
+                <div>
+                    <!-- Event Summary Card -->
+                    <div class="card" style="margin-bottom:20px;">
+                        <div class="card-body">
+                            <span class="badge badge-secondary" id="eventCategoryBadge" style="margin-bottom:8px;">Category</span>
+                            <h2 style="font-size:1.35rem; font-weight:800; margin-bottom:8px;" id="eventTitle">Event Title</h2>
+                            <div style="font-size:0.85rem; color:var(--text-secondary);" id="eventSchedule">
+                                Schedule
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quantity Selector -->
+                    <div class="card" style="margin-bottom:20px;">
+                        <div class="card-header">
+                            <h3 class="card-title">1. Select Number of Tickets</h3>
+                        </div>
+                        <div class="card-body">
+                            <div style="display:flex; align-items:center; justify-content:space-between;">
+                                <div>
+                                    <div style="font-weight:700; color:var(--text-primary);">Standard Entry Pass</div>
+                                    <div style="font-size:0.82rem; color:var(--text-muted);" id="availableSeatsText">
+                                        Max 5 tickets per transaction
+                                    </div>
+                                </div>
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" id="btnQtyMinus" style="width:36px; height:36px; padding:0; justify-content:center;">-</button>
+                                    <input type="number" id="ticketQuantity" class="form-control" value="1" min="1" max="5" style="width:60px; text-align:center; font-weight:700;" readonly>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" id="btnQtyPlus" style="width:36px; height:36px; padding:0; justify-content:center;">+</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Attendee Dynamic Details -->
+                    <div class="card" style="margin-bottom:20px;">
+                        <div class="card-header">
+                            <h3 class="card-title">2. Attendee Pass Information</h3>
+                        </div>
+                        <div class="card-body" id="attendeesContainer">
+                            <!-- Dynamic rows -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Summary Card -->
+                <div style="position:sticky; top:90px;">
+                    <div class="card" style="border-top:4px solid var(--primary);">
+                        <div class="card-header">
+                            <h3 class="card-title">Order Summary</h3>
+                        </div>
+                        <div class="card-body">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:0.9rem;">
+                                <span style="color:var(--text-secondary);">Unit Ticket Price:</span>
+                                <span style="font-weight:700;" id="unitPriceDisplay">$0.00</span>
+                            </div>
+
+                            <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:0.9rem;">
+                                <span style="color:var(--text-secondary);">Platform Processing Fee:</span>
+                                <span style="font-weight:700; color:#059669;">$0.00 (Waived)</span>
+                            </div>
+
+                            <div style="height:1px; background:var(--border-subtle); margin:16px 0;"></div>
+
+                            <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:20px;">
+                                <span style="font-size:1.05rem; font-weight:800; color:var(--text-primary);">Total Amount:</span>
+                                <span style="font-size:1.6rem; font-weight:800; color:var(--primary-900);" id="totalPriceDisplay">$0.00</span>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-lg btn-block" style="padding:12px;" id="submitBtn">
+                                Proceed to Payment &rarr;
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+
+    </div>
+</main>
+
+<script src="assets/js/mock-db.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    MockDB.renderHeaderNav('events');
+    const params = new URLSearchParams(window.location.search);
+    const eventId = parseInt(params.get('event_id') || '1', 10);
+    const event = MockDB.getEventById(eventId) || MockDB.getEvents()[0];
+    const user = MockDB.getCurrentUser();
+
+    document.getElementById('eventCategoryBadge').textContent = event.category_name;
+    document.getElementById('eventTitle').textContent = event.title;
+    document.getElementById('eventSchedule').textContent = `${event.event_date} · ${event.start_time} · ${event.venue}`;
+    document.getElementById('availableSeatsText').textContent = `Max 5 tickets per transaction (${event.available_seats} seats remaining)`;
+
+    const qtyInput = document.getElementById('ticketQuantity');
+    const unitPriceDisplay = document.getElementById('unitPriceDisplay');
+    const totalPriceDisplay = document.getElementById('totalPriceDisplay');
+    const attendeesContainer = document.getElementById('attendeesContainer');
+    const submitBtn = document.getElementById('submitBtn');
+
+    unitPriceDisplay.textContent = event.ticket_price === 0 ? 'Free' : '$' + event.ticket_price.toFixed(2);
+
+    function updateAttendees() {
+        const qty = parseInt(qtyInput.value, 10);
+        const total = qty * event.ticket_price;
+        totalPriceDisplay.textContent = total === 0 ? 'Free' : '$' + total.toFixed(2);
+        submitBtn.textContent = total === 0 ? 'Confirm Free Registration' : 'Proceed to Payment →';
+
+        attendeesContainer.innerHTML = '';
+        for (let i = 1; i <= qty; i++) {
+            const isFirst = i === 1;
+            const defName = isFirst ? user.name : '';
+            const defEmail = isFirst ? user.email : '';
+            attendeesContainer.innerHTML += `
+                <div class="attendee-row card" style="margin-bottom:14px; padding:16px; background:#f8fafc;">
+                    <div style="font-weight:700; font-size:0.88rem; color:#1e40af; margin-bottom:10px;">
+                        Pass Holder #${i} ${isFirst ? '(Primary Registrant)' : ''}
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label form-label-required">Full Name</label>
+                            <input type="text" class="form-control attendee-name" value="${defName}" placeholder="e.g. John Doe" required>
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label class="form-label form-label-required">Attendee Email</label>
+                            <input type="email" class="form-control attendee-email" value="${defEmail}" placeholder="e.g. j.doe@campus.edu" required>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    document.getElementById('btnQtyMinus').addEventListener('click', () => {
+        let val = parseInt(qtyInput.value, 10);
+        if (val > 1) { qtyInput.value = val - 1; updateAttendees(); }
+    });
+
+    document.getElementById('btnQtyPlus').addEventListener('click', () => {
+        let val = parseInt(qtyInput.value, 10);
+        if (val < Math.min(5, event.available_seats)) { qtyInput.value = val + 1; updateAttendees(); }
+    });
+
+    updateAttendees();
+
+    document.getElementById('bookingForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const names = Array.from(document.querySelectorAll('.attendee-name')).map(el => el.value.trim());
+        const emails = Array.from(document.querySelectorAll('.attendee-email')).map(el => el.value.trim());
+
+        const attendees = names.map((name, idx) => ({ name, email: emails[idx] }));
+        const qty = parseInt(qtyInput.value, 10);
+
+        // Store pending booking state in sessionStorage
+        const pending = {
+            event_id: event.id,
+            quantity: qty,
+            attendees: attendees,
+            user: user,
+            total_amount: event.ticket_price * qty
+        };
+        sessionStorage.setItem('ceh_pending_booking', JSON.stringify(pending));
+
+        if (event.ticket_price === 0) {
+            // Instant confirm free
+            const created = MockDB.createBooking(pending);
+            window.location.href = `confirmation.html?ref=${created.booking_reference}`;
+        } else {
+            window.location.href = `payment.html`;
+        }
+    });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Confirmed — CampusEvent Hub</title>
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+
+<header class="site-header">
+    <div class="header-inner">
+        <a href="index.html" class="brand-link">
+            <div class="brand-logo-mark">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z"/></svg>
+            </div>
+            <div class="brand-text">
+                <span class="brand-name">CampusEvent Hub</span>
+                <span class="brand-badge">Academic & Enterprise</span>
+            </div>
+        </a>
+        <nav class="main-nav">
+            <ul class="nav-list">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="events.html" class="nav-link">Discover Events</a></li>
+                <li><a href="student-dashboard.html" class="nav-link nav-link-portal">My Passes</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<main class="main-content" style="background:#f1f5f9; padding:36px 0 70px 0;">
+    <div class="container" style="max-width:820px;" id="confirmationContainer">
+        <!-- Dynamically rendered -->
+    </div>
+</main>
+
+<script src="assets/js/mock-db.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    MockDB.renderHeaderNav('events');
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref') || 'EVT-2026-A19F8';
+    const booking = MockDB.getBookingByRef(ref) || MockDB.getBookings()[0];
+
+    const priceText = booking.total_amount === 0 ? 'Free Registration' : '$' + booking.total_amount.toFixed(2);
+
+    const container = document.getElementById('confirmationContainer');
+    container.innerHTML = `
+        <div class="card" style="border-top:5px solid #059669; box-shadow:var(--shadow-md); margin-bottom:28px;">
+            <div class="card-body" style="padding:36px; text-align:center;">
+                <div style="width:64px; height:64px; background:#ecfdf5; color:#059669; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 16px auto;">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <span class="badge badge-success" style="font-size:0.82rem; padding:5px 12px; margin-bottom:10px;">
+                    Registration Confirmed & Verified
+                </span>
+                <h1 style="font-size:1.85rem; font-weight:800; color:var(--text-primary); margin-bottom:6px;">
+                    You are registered for ${booking.event_title}!
+                </h1>
+                <p style="color:var(--text-secondary); max-width:540px; margin:0 auto 20px auto; font-size:0.95rem;">
+                    Your transaction has been recorded. Your digital entry passes are ready for gate check-in at the venue.
+                </p>
+                <div style="display:inline-block; background:#f8fafc; border:1px solid #cbd5e1; border-radius:var(--radius-sm); padding:10px 20px; font-family:monospace; font-size:1.1rem; font-weight:700; color:var(--primary-900);">
+                    Booking Ref: ${booking.booking_reference}
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom:28px;">
+            <div class="card-header">
+                <h3 class="card-title">Attendee Digital Passes (${booking.attendees.length})</h3>
+            </div>
+            <div class="card-body" style="padding:0;">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Attendee Name</th>
+                                <th>Email</th>
+                                <th>Pass Code</th>
+                                <th style="text-align:right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${booking.attendees.map((att, idx) => `
+                                <tr>
+                                    <td>${idx + 1}</td>
+                                    <td><strong>${att.attendee_name}</strong></td>
+                                    <td>${att.attendee_email}</td>
+                                    <td><span class="badge badge-neutral" style="font-family:monospace; font-size:0.82rem;">${att.ticket_code}</span></td>
+                                    <td style="text-align:right;">
+                                        <a href="ticket-view.html?code=${att.ticket_code}&ref=${booking.booking_reference}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                            View / Print Pass
+                                        </a>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <a href="student-dashboard.html" class="btn btn-primary">Go to Student Dashboard &rarr;</a>
+            <a href="events.html" class="btn btn-outline-secondary">Browse More Events</a>
+        </div>
+    `;
+});
+</script>
+</body>
+</html>
