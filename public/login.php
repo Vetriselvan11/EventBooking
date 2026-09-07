@@ -107,24 +107,6 @@ require_once APP_ROOT . '/includes/header.php';
                     </button>
                 </form>
 
-                <!-- Demo Account Fast-Fill Bar -->
-                <div style="margin-top:24px; padding-top:18px; border-top:1px solid var(--border-subtle);">
-                    <div style="font-size:0.75rem; text-transform:uppercase; font-weight:700; color:var(--text-muted); text-align:center; margin-bottom:10px;">
-                        Quick Demo Account Selector
-                    </div>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:6px;">
-                        <button type="button" class="btn btn-outline-secondary btn-sm" style="font-size:0.75rem; justify-content:center; padding:6px 4px;" onclick="fillLogin('admin@campus.edu', 'Admin@123')">
-                            Admin
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm" style="font-size:0.75rem; justify-content:center; padding:6px 4px;" onclick="fillLogin('coordinator@campus.edu', 'Coord@123')">
-                            Coordinator
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm" style="font-size:0.75rem; justify-content:center; padding:6px 4px;" onclick="fillLogin('student@campus.edu', 'Student@123')">
-                            Student
-                        </button>
-                    </div>
-                </div>
-
             </div>
 
             <div class="card-footer" style="text-align:center; font-size:0.86rem;">
@@ -134,12 +116,5 @@ require_once APP_ROOT . '/includes/header.php';
 
     </div>
 </main>
-
-<script>
-function fillLogin(email, pass) {
-    document.getElementById('loginEmail').value = email;
-    document.getElementById('loginPassword').value = pass;
-}
-</script>
 
 <?php require_once APP_ROOT . '/includes/footer.php'; ?>

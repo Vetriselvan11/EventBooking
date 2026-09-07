@@ -38,35 +38,18 @@
                 <form id="loginForm">
                     <div class="form-group">
                         <label class="form-label form-label-required">Institutional Email</label>
-                        <input type="email" id="loginEmail" class="form-control" value="student@campus.edu" required>
+                        <input type="email" id="loginEmail" class="form-control" placeholder="username@campus.edu" required autofocus>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label form-label-required">Password</label>
-                        <input type="password" id="loginPassword" class="form-control" value="Student@123" required>
+                        <input type="password" id="loginPassword" class="form-control" placeholder="••••••••" required>
                     </div>
 
                     <button type="submit" class="btn btn-primary btn-block" style="padding:11px; margin-top:8px;">
                         Sign In &rarr;
                     </button>
                 </form>
-
-                <div style="margin-top:24px; padding-top:18px; border-top:1px solid var(--border-subtle);">
-                    <div style="font-size:0.75rem; text-transform:uppercase; font-weight:700; color:var(--text-muted); text-align:center; margin-bottom:10px;">
-                        1-Click Demo Role Selector
-                    </div>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:6px;">
-                        <button type="button" class="btn btn-outline-secondary btn-sm" style="font-size:0.75rem; justify-content:center;" onclick="setRole('admin')">
-                            Admin
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm" style="font-size:0.75rem; justify-content:center;" onclick="setRole('coordinator')">
-                            Coordinator
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm" style="font-size:0.75rem; justify-content:center;" onclick="setRole('student')">
-                            Student
-                        </button>
-                    </div>
-                </div>
             </div>
 
             <div class="card-footer" style="text-align:center; font-size:0.86rem;">
@@ -79,31 +62,18 @@
 
 <script src="assets/js/mock-db.js"></script>
 <script>
-let currentSelectedRole = 'student';
-
-function setRole(role) {
-    currentSelectedRole = role;
-    const email = document.getElementById('loginEmail');
-    const pass = document.getElementById('loginPassword');
-
-    if (role === 'admin') {
-        email.value = 'admin@campus.edu';
-        pass.value = 'Admin@123';
-    } else if (role === 'coordinator') {
-        email.value = 'coordinator@campus.edu';
-        pass.value = 'Coord@123';
-    } else {
-        email.value = 'student@campus.edu';
-        pass.value = 'Student@123';
-    }
-}
-
 document.getElementById('loginForm').addEventListener('submit', (e) => {
     e.preventDefault();
     const email = document.getElementById('loginEmail').value.trim();
+    const pass = document.getElementById('loginPassword').value;
+
+    if (!email || !pass) {
+        alert('Please enter both email and password.');
+        return;
+    }
 
     if (email.toLowerCase().includes('admin')) {
-        MockDB.setCurrentUser({ id: 1, name: 'Dr. Arthur Pendelton', email: 'admin@campus.edu', role: 'admin' });
+        MockDB.setCurrentUser({ id: 1, name: 'Dr. Arthur Pendelton', email: email, role: 'admin' });
         window.location.href = 'admin-dashboard.html';
     } else if (email.toLowerCase().includes('coord') || email.toLowerCase().includes('marcus') || email.toLowerCase().includes('elena') || email.toLowerCase().includes('miller')) {
         const coords = MockDB.getCoordinators();
@@ -115,7 +85,7 @@ document.getElementById('loginForm').addEventListener('submit', (e) => {
         MockDB.setCurrentUser({
             id: found ? found.id : 2,
             name: found ? found.name : 'Prof. Elena Rostova',
-            email: found ? found.email : 'coordinator@campus.edu',
+            email: email,
             role: 'coordinator',
             department: found ? found.department : 'Computer Science & Engineering'
         });
@@ -124,7 +94,7 @@ document.getElementById('loginForm').addEventListener('submit', (e) => {
         MockDB.setCurrentUser({
             id: 4,
             name: 'Alexander Wright',
-            email: email || 'student@campus.edu',
+            email: email,
             role: 'student',
             student_id: 'STU-2024-8841',
             department: 'Computer Science & Engineering'
