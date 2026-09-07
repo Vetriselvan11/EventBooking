@@ -18,6 +18,15 @@
         .ticket-code-badge { font-family: monospace; font-size: 1.1rem; font-weight: 800; color: #1e40af; letter-spacing: 0.08em; margin-top: 8px; }
         .ticket-footer { background: #f8fafc; padding: 16px 30px; border-top: 1px solid #e2e8f0; font-size: 0.78rem; color: #64748b; display: flex; justify-content: space-between; align-items: center; }
         .print-toolbar { max-width: 680px; margin: 0 auto 20px auto; display: flex; justify-content: space-between; align-items: center; }
+        @media (max-width: 640px) {
+            body { padding: 16px 12px; }
+            .ticket-header { padding: 16px; flex-direction: column; align-items: flex-start; gap: 10px; }
+            .ticket-body { padding: 18px 16px; }
+            .ticket-grid { grid-template-columns: 1fr; gap: 18px; }
+            .ticket-footer { padding: 12px 16px; flex-direction: column; gap: 8px; text-align: center; }
+            .print-toolbar { flex-direction: column; gap: 10px; align-items: stretch; }
+            .print-toolbar .btn { width: 100%; justify-content: center; }
+        }
         @media print {
             body { background: #fff; padding: 0; }
             .print-toolbar { display: none !important; }

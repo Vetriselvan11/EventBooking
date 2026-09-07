@@ -736,6 +736,7 @@ class MockDB {
 
   static renderHeaderNav(activePage = '') {
     const user = this.getCurrentUser();
+    const headerInner = document.querySelector('.site-header .header-inner');
     const navList = document.querySelector('.main-nav .nav-list');
     const headerActions = document.querySelector('.header-actions');
 
@@ -763,12 +764,12 @@ class MockDB {
       if (user) {
         let badgeColor = user.role === 'admin' ? '#ef4444' : (user.role === 'coordinator' ? '#d97706' : '#2563eb');
         headerActions.innerHTML = `
-          <div style="display:flex; align-items:center; gap:12px;">
-            <div style="display:flex; flex-direction:column; text-align:right;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div class="user-profile-widget" style="display:flex; flex-direction:column; text-align:right;">
               <span style="font-size:0.85rem; font-weight:700; color:var(--text-primary);">${user.name}</span>
               <span style="font-size:0.72rem; font-weight:700; text-transform:uppercase; color:${badgeColor};">${user.role}</span>
             </div>
-            <button onclick="MockDB.logout()" class="btn btn-outline-secondary btn-sm" style="padding:5px 12px; font-size:0.8rem;">
+            <button onclick="MockDB.logout()" class="btn btn-outline-secondary btn-sm" style="padding:6px 12px; font-size:0.8rem;">
               Sign Out
             </button>
           </div>
@@ -776,30 +777,231 @@ class MockDB {
       } else {
         headerActions.innerHTML = `
           <a href="login.html" class="btn btn-outline-primary btn-sm">Sign In</a>
-          <a href="register.html" class="btn btn-primary btn-sm">Student Register</a>
+          <a href="register.html" class="btn btn-primary btn-sm">Register</a>
         `;
       }
     }
+
+    // Ensure Mobile Nav Toggle Button exists
+    if (headerInner && !document.getElementById('mobileNavToggleBtn')) {
+      const toggleBtn = document.createElement('button');
+      toggleBtn.id = 'mobileNavToggleBtn';
+      toggleBtn.className = 'mobile-nav-toggle';
+      toggleBtn.setAttribute('aria-label', 'Open Navigation Menu');
+      toggleBtn.innerHTML = `
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+      `;
+      headerInner.appendChild(toggleBtn);
+      
+      toggleBtn.addEventListener('click', () => {
+        MockDB.openMobileNav();
+      });
+    }
+
+    // Setup Mobile Nav Drawer in Body
+    this.setupMobileNavDrawer(activePage, user);
+  }
+
+  static setupMobileNavDrawer(activePage, user) {
+    let drawer = document.getElementById('mobileNavDrawer');
+    let backdrop = document.getElementById('mobileNavBackdrop');
+
+    if (!backdrop) {
+      backdrop = document.createElement('div');
+      backdrop.id = 'mobileNavBackdrop';
+      backdrop.className = 'mobile-nav-backdrop';
+      backdrop.onclick = () => MockDB.closeMobileNav();
+      document.body.appendChild(backdrop);
+    }
+
+    if (!drawer) {
+      drawer = document.createElement('div');
+      drawer.id = 'mobileNavDrawer';
+      drawer.className = 'mobile-nav-drawer';
+      document.body.appendChild(drawer);
+    }
+
+    let linksHtml = `
+      <li><a href="index.html" class="mobile-nav-link ${activePage === 'home' ? 'active' : ''}">🏠 Home</a></li>
+      <li><a href="events.html" class="mobile-nav-link ${activePage === 'events' ? 'active' : ''}">🗓️ Discover Events</a></li>
+      <li><a href="verify-ticket.html" class="mobile-nav-link ${activePage === 'verify' ? 'active' : ''}">🔍 Verify Pass</a></li>
+    `;
+
+    if (user) {
+      if (user.role === 'student') {
+        linksHtml += `<li><a href="student-dashboard.html" class="mobile-nav-link ${activePage === 'student' ? 'active' : ''}">🎓 Student Hub</a></li>`;
+      } else if (user.role === 'coordinator') {
+        linksHtml += `<li><a href="coordinator-dashboard.html" class="mobile-nav-link ${activePage === 'coordinator' ? 'active' : ''}">👥 Coordinator Desk</a></li>`;
+      } else if (user.role === 'admin') {
+        linksHtml += `<li><a href="admin-dashboard.html" class="mobile-nav-link ${activePage === 'admin' ? 'active' : ''}">⚙️ Admin Console</a></li>`;
+      }
+    }
+
+    let authFooter = '';
+    if (user) {
+      let badgeBg = user.role === 'admin' ? '#fee2e2' : (user.role === 'coordinator' ? '#fef3c7' : '#dbeafe');
+      let badgeColor = user.role === 'admin' ? '#991b1b' : (user.role === 'coordinator' ? '#92400e' : '#1e40af');
+      authFooter = `
+        <div style="background:#f1f5f9; padding:12px 14px; border-radius:8px; margin-bottom:10px;">
+          <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase;">Signed in as</div>
+          <div style="font-size:0.95rem; font-weight:700; color:var(--text-primary);">${user.name}</div>
+          <span style="display:inline-block; font-size:0.7rem; font-weight:800; text-transform:uppercase; padding:2px 8px; border-radius:4px; margin-top:4px; background:${badgeBg}; color:${badgeColor};">${user.role}</span>
+        </div>
+        <button onclick="MockDB.logout()" class="btn btn-outline-danger btn-block" style="padding:10px;">
+          🚪 Sign Out
+        </button>
+      `;
+    } else {
+      authFooter = `
+        <a href="login.html" class="btn btn-outline-primary btn-block" style="padding:10px;">Sign In</a>
+        <a href="register.html" class="btn btn-primary btn-block" style="padding:10px;">Student Registration</a>
+      `;
+    }
+
+    drawer.innerHTML = `
+      <div class="mobile-nav-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div class="brand-logo-mark" style="width:32px; height:32px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z"/></svg>
+          </div>
+          <span style="font-weight:800; font-size:1.05rem;">CampusEvent</span>
+        </div>
+        <button class="mobile-nav-close" onclick="MockDB.closeMobileNav()">&times;</button>
+      </div>
+      <div class="mobile-nav-body">
+        <ul class="mobile-nav-menu">
+          ${linksHtml}
+        </ul>
+      </div>
+      <div class="mobile-nav-footer">
+        ${authFooter}
+      </div>
+    `;
+  }
+
+  static openMobileNav() {
+    const drawer = document.getElementById('mobileNavDrawer');
+    const backdrop = document.getElementById('mobileNavBackdrop');
+    if (drawer) drawer.classList.add('open');
+    if (backdrop) backdrop.classList.add('open');
+  }
+
+  static closeMobileNav() {
+    const drawer = document.getElementById('mobileNavDrawer');
+    const backdrop = document.getElementById('mobileNavBackdrop');
+    if (drawer) drawer.classList.remove('open');
+    if (backdrop) backdrop.classList.remove('open');
   }
 
   /* =========================================================================
-     MODERN TOAST NOTIFICATION ENGINE
+     RESPONSIVE DASHBOARD SIDEBAR DRAWER INITIALIZER
+     ========================================================================= */
+  static initDashboardSidebar() {
+    const sidebar = document.querySelector('.dashboard-sidebar');
+    const workspace = document.querySelector('.dashboard-workspace');
+    const layout = document.querySelector('.dashboard-layout');
+
+    if (!sidebar || !layout) return;
+
+    // 1. Inject Mobile Bar above workspace if not present
+    if (!document.getElementById('dbMobileBar')) {
+      const user = this.getCurrentUser();
+      const role = user ? user.role : 'portal';
+      let roleTagClass = role === 'admin' ? 'role-tag-admin' : (role === 'coordinator' ? 'role-tag-coordinator' : 'role-tag-student');
+      let roleLabel = role === 'admin' ? 'Admin Console' : (role === 'coordinator' ? 'Coordinator Desk' : 'Student Hub');
+
+      const mobileBar = document.createElement('div');
+      mobileBar.id = 'dbMobileBar';
+      mobileBar.className = 'dashboard-mobile-bar';
+      mobileBar.innerHTML = `
+        <button class="dashboard-mobile-bar-btn" id="dbSidebarToggleBtn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+          <span>Views & Navigation</span>
+        </button>
+        <span class="sidebar-role-tag ${roleTagClass}" style="margin-bottom:0;">${roleLabel}</span>
+      `;
+
+      if (workspace) {
+        layout.insertBefore(mobileBar, workspace);
+      } else {
+        layout.prepend(mobileBar);
+      }
+
+      document.getElementById('dbSidebarToggleBtn').addEventListener('click', () => {
+        MockDB.openDashboardSidebar();
+      });
+    }
+
+    // 2. Inject Sidebar Close Button in Brand Badge if not present
+    const brandBadge = sidebar.querySelector('.sidebar-brand-badge');
+    if (brandBadge && !document.getElementById('sbCloseBtn')) {
+      const closeBtn = document.createElement('button');
+      closeBtn.id = 'sbCloseBtn';
+      closeBtn.className = 'sidebar-close-btn';
+      closeBtn.setAttribute('title', 'Close Navigation Drawer');
+      closeBtn.innerHTML = '&times;';
+      closeBtn.style.cssText = 'position:absolute; top:12px; right:14px; font-size:1.6rem; color:var(--text-muted); cursor:pointer; background:none; border:none; line-height:1; padding:2px 8px;';
+      brandBadge.style.position = 'relative';
+      brandBadge.appendChild(closeBtn);
+
+      closeBtn.addEventListener('click', () => {
+        MockDB.closeDashboardSidebar();
+      });
+    }
+
+    // 3. Inject Backdrop if not present
+    if (!document.getElementById('dbSidebarBackdrop')) {
+      const backdrop = document.createElement('div');
+      backdrop.id = 'dbSidebarBackdrop';
+      backdrop.className = 'dashboard-sidebar-backdrop';
+      backdrop.onclick = () => MockDB.closeDashboardSidebar();
+      document.body.appendChild(backdrop);
+    }
+
+    // 4. Close drawer automatically when clicking sidebar links on mobile
+    sidebar.querySelectorAll('.sidebar-link').forEach(link => {
+      link.addEventListener('click', () => {
+        if (window.innerWidth <= 992) {
+          MockDB.closeDashboardSidebar();
+        }
+      });
+    });
+  }
+
+  static openDashboardSidebar() {
+    const sidebar = document.querySelector('.dashboard-sidebar');
+    const backdrop = document.getElementById('dbSidebarBackdrop');
+    if (sidebar) sidebar.classList.add('open');
+    if (backdrop) backdrop.classList.add('open');
+  }
+
+  static closeDashboardSidebar() {
+    const sidebar = document.querySelector('.dashboard-sidebar');
+    const backdrop = document.getElementById('dbSidebarBackdrop');
+    if (sidebar) sidebar.classList.remove('open');
+    if (backdrop) backdrop.classList.remove('open');
+  }
+
+  /* =========================================================================
+     MODERN TOAST NOTIFICATION ENGINE (RESPONSIVE)
      ========================================================================= */
   static toast(message, type = 'success', duration = 3200) {
     let container = document.getElementById('cehToastContainer');
     if (!container) {
       container = document.createElement('div');
       container.id = 'cehToastContainer';
+      const isMobile = window.innerWidth <= 600;
       container.style.cssText = `
         position: fixed;
-        top: 24px;
-        right: 24px;
+        top: ${isMobile ? '14px' : '24px'};
+        right: ${isMobile ? '14px' : '24px'};
+        left: ${isMobile ? '14px' : 'auto'};
         z-index: 99999;
         display: flex;
         flex-direction: column;
         gap: 10px;
         pointer-events: none;
-        max-width: 380px;
+        max-width: ${isMobile ? 'calc(100vw - 28px)' : '380px'};
         width: 100%;
       `;
       document.body.appendChild(container);
@@ -809,20 +1011,21 @@ class MockDB {
     toast.style.cssText = `
       background: #0f172a;
       color: #ffffff;
-      padding: 14px 18px;
+      padding: 12px 16px;
       border-radius: 8px;
       box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3), 0 8px 10px -6px rgba(0,0,0,0.2);
       border-left: 4px solid ${type === 'success' ? '#22c55e' : (type === 'error' ? '#ef4444' : (type === 'warning' ? '#f59e0b' : '#3b82f6'))};
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       font-size: 0.88rem;
       font-weight: 500;
       line-height: 1.4;
       pointer-events: auto;
-      transform: translateX(120%);
+      transform: translateY(-10px);
       transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
       opacity: 0;
+      width: 100%;
     `;
 
     const iconMap = {
@@ -836,25 +1039,25 @@ class MockDB {
       <span style="font-size:1.1rem; font-weight:800; color:${type === 'success' ? '#4ade80' : (type === 'error' ? '#f87171' : (type === 'warning' ? '#fbbf24' : '#60a5fa'))}">
         ${iconMap[type] || 'ℹ'}
       </span>
-      <div style="flex:1;">${message}</div>
+      <div style="flex:1; min-width:0; word-break:break-word;">${message}</div>
       <button style="background:none; border:none; color:#94a3b8; font-size:1.2rem; cursor:pointer; padding:0 4px; line-height:1;" onclick="this.parentElement.remove()">&times;</button>
     `;
 
     container.appendChild(toast);
     requestAnimationFrame(() => {
-      toast.style.transform = 'translateX(0)';
+      toast.style.transform = 'translateY(0)';
       toast.style.opacity = '1';
     });
 
     setTimeout(() => {
-      toast.style.transform = 'translateX(120%)';
+      toast.style.transform = 'translateY(-10px)';
       toast.style.opacity = '0';
       setTimeout(() => toast.remove(), 250);
     }, duration);
   }
 
   /* =========================================================================
-     CUSTOM CONFIRM MODAL
+     CUSTOM CONFIRM MODAL (RESPONSIVE)
      ========================================================================= */
   static confirmModal({ title = 'Confirm Action', message = 'Are you sure?', confirmText = 'Confirm', confirmClass = 'btn-primary', onConfirm }) {
     let modal = document.getElementById('cehConfirmModal');
@@ -870,23 +1073,23 @@ class MockDB {
         display: none;
         align-items: center;
         justify-content: center;
-        padding: 20px;
+        padding: 16px;
       `;
       document.body.appendChild(modal);
     }
 
     modal.innerHTML = `
-      <div style="background:#ffffff; border-radius:12px; max-width:440px; width:100%; box-shadow:0 25px 50px -12px rgba(0,0,0,0.3); border:1px solid #e2e8f0; overflow:hidden; animation: modalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);">
-        <div style="padding:20px 24px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center;">
-          <h3 style="font-size:1.1rem; font-weight:700; color:#0f172a; margin:0;">${title}</h3>
-          <button id="cehConfirmClose" style="border:none; background:none; font-size:1.3rem; cursor:pointer; color:#64748b;">&times;</button>
+      <div style="background:#ffffff; border-radius:12px; max-width:min(92vw, 440px); width:100%; box-shadow:0 25px 50px -12px rgba(0,0,0,0.3); border:1px solid #e2e8f0; overflow:hidden; animation: modalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);">
+        <div style="padding:18px 20px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center;">
+          <h3 style="font-size:1.05rem; font-weight:700; color:#0f172a; margin:0;">${title}</h3>
+          <button id="cehConfirmClose" style="border:none; background:none; font-size:1.3rem; cursor:pointer; color:#64748b; line-height:1;">&times;</button>
         </div>
-        <div style="padding:22px 24px; font-size:0.92rem; color:#475569; line-height:1.5;">
+        <div style="padding:18px 20px; font-size:0.9rem; color:#475569; line-height:1.5;">
           ${message}
         </div>
-        <div style="padding:16px 24px; background:#f8fafc; border-top:1px solid #e2e8f0; display:flex; justify-content:flex-end; gap:10px;">
-          <button id="cehConfirmCancel" class="btn btn-outline-secondary btn-sm" style="padding:8px 16px;">Cancel</button>
-          <button id="cehConfirmOk" class="btn ${confirmClass} btn-sm" style="padding:8px 18px; font-weight:700;">${confirmText}</button>
+        <div style="padding:14px 20px; background:#f8fafc; border-top:1px solid #e2e8f0; display:flex; justify-content:flex-end; gap:10px; flex-wrap:wrap;">
+          <button id="cehConfirmCancel" class="btn btn-outline-secondary btn-sm" style="padding:8px 14px;">Cancel</button>
+          <button id="cehConfirmOk" class="btn ${confirmClass} btn-sm" style="padding:8px 16px; font-weight:700;">${confirmText}</button>
         </div>
       </div>
       <style>
@@ -911,3 +1114,13 @@ class MockDB {
 
 // Auto-initialize on script load
 MockDB.init();
+
+// Auto-initialize dashboard sidebar if present when DOM is loaded
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    MockDB.initDashboardSidebar();
+  });
+} else {
+  MockDB.initDashboardSidebar();
+}
+

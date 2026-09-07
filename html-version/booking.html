@@ -34,25 +34,25 @@
     <div class="container" style="max-width:860px;">
 
         <!-- Step Indicator -->
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; background:#ffffff; padding:16px 24px; border-radius:var(--radius-md); border:1px solid var(--border-subtle);">
+        <div class="step-indicator-bar" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; background:#ffffff; padding:16px 20px; border-radius:var(--radius-md); border:1px solid var(--border-subtle); flex-wrap:wrap; gap:12px;">
             <div style="display:flex; align-items:center; gap:10px; color:var(--primary); font-weight:700;">
-                <span style="width:28px; height:28px; background:var(--primary); color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.85rem;">1</span>
+                <span style="width:28px; height:28px; background:var(--primary); color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.85rem; flex-shrink:0;">1</span>
                 <span>Attendee & Ticket Selection</span>
             </div>
-            <div style="color:var(--text-muted);">&rarr;</div>
+            <div class="step-arrow" style="color:var(--text-muted);">&rarr;</div>
             <div style="display:flex; align-items:center; gap:10px; color:var(--text-muted); font-weight:600;">
-                <span style="width:28px; height:28px; background:var(--bg-hover); color:var(--text-muted); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.85rem;">2</span>
+                <span style="width:28px; height:28px; background:var(--bg-hover); color:var(--text-muted); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.85rem; flex-shrink:0;">2</span>
                 <span>Payment & Verification</span>
             </div>
-            <div style="color:var(--text-muted);">&rarr;</div>
+            <div class="step-arrow" style="color:var(--text-muted);">&rarr;</div>
             <div style="display:flex; align-items:center; gap:10px; color:var(--text-muted); font-weight:600;">
-                <span style="width:28px; height:28px; background:var(--bg-hover); color:var(--text-muted); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.85rem;">3</span>
+                <span style="width:28px; height:28px; background:var(--bg-hover); color:var(--text-muted); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.85rem; flex-shrink:0;">3</span>
                 <span>Digital Pass Ready</span>
             </div>
         </div>
 
         <form id="bookingForm">
-            <div style="display:grid; grid-template-columns: 1.6fr 1fr; gap:28px; align-items:start;">
+            <div class="checkout-grid">
                 
                 <div>
                     <!-- Event Summary Card -->
